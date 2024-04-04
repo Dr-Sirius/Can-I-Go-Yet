@@ -11,7 +11,6 @@ import (
 	_ "fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-	
 )
 
 var updateTime time.Duration = 5 * time.Second
@@ -23,7 +22,7 @@ func CustomerView(app fyne.App) {
 	
 
 	openLBL := canvas.NewText("Closed", color.RGBA{R: 255, G: 0, B: 0, A: 255})
-	openLBL.TextSize = 200
+	openLBL.TextSize = 150
 	openLBL.Alignment = fyne.TextAlignCenter
 
 	ctLBL := canvas.NewText("", color.Black)
@@ -34,11 +33,12 @@ func CustomerView(app fyne.App) {
 	officeHoursLBL.TextSize = 25
 	officeHoursLBL.Alignment = fyne.TextAlignCenter
 
-	btn := widget.NewButton("Fullscreen",func(){})
+	btn := widget.NewButton("Fullscreen", func() {})
 	btn.Alignment = widget.ButtonAlign(fyne.TextAlignCenter)
-	logo := canvas.NewImageFromResource(resourceCheeseJpeg)
+	logo := canvas.NewImageFromResource(resourceLogoPng)
+	logo.Resize(fyne.NewSize(200,200))
 
-	//logo.Resize(fyne.NewSize(200,200))
+	
 
 	go func() {
 		for range time.Tick(time.Second) {
@@ -47,18 +47,15 @@ func CustomerView(app fyne.App) {
 	}()
 
 	content := container.NewAdaptiveGrid(
-		3,
+		2,
 		logo,
 		container.New(
 			layout.NewVBoxLayout(),
 			openLBL,
 			ctLBL,
 			officeHoursLBL,
-			
 		),
 		NewFullScreenButton("cheese"),
-		
-
 	)
 	myWindow.SetContent(content)
 	myWindow.Show()
@@ -71,7 +68,6 @@ func updateClock(clock *canvas.Text) {
 	clock.Refresh()
 
 }
-
 
 func NewFullScreenButton(text string) *widget.Label {
 	return widget.NewLabel(text)

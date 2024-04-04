@@ -1,10 +1,11 @@
 package main
 
-
 import (
 	"can-i-go-yet/ui"
+	
 )
 
-func main(){
+func main() {
+
 	ui.Run()
 }

@@ -13,7 +13,6 @@ const (
 )
 
 type Schedule struct {
-	Date 	  string
 	StartTime time.Time
 	EndTime   time.Time
 	Flags     map[int]bool
@@ -27,15 +26,15 @@ type Day struct {
 }
 
 func NewSchedule(st string, et string, date string, flags ...int) Schedule {
-	return NewScheduleFromTime(date, convertTime(st, date), convertTime(et, date), flags...)
+	return NewScheduleFromTime(convertTime(st, date), convertTime(et, date), flags...)
 }
 
-func NewScheduleFromTime(date string, st time.Time, et time.Time, flags ...int) Schedule {
+func NewScheduleFromTime(st time.Time, et time.Time, flags ...int) Schedule {
 	f := make(map[int]bool)
 	for _, x := range flags {
 		f[x] = true
 	}
-	return Schedule{date,st, et, f}
+	return Schedule{st, et, f}
 }
 
 func convertTime(s string, d string) time.Time {
@@ -56,7 +55,15 @@ func convertTime(s string, d string) time.Time {
 func NewDay(date string, schedules ...Schedule) Day {
 	s := make([]Schedule,0)
 	for _,x := range schedules {
-		if x.Date == date {
+		y,m,d := x.StartTime.Date()
+		mt := fmt.Sprint(int(m))
+		if int(m) < 10 {
+			mt = "0"+mt
+		}
+		
+		dt := fmt.Sprint(y) + "-" + mt + "-" + fmt.Sprint(d)
+		log.Println(dt)
+		if dt == date {
 			s = append(s, x)
 		}
 	}

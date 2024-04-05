@@ -67,7 +67,25 @@ func NewDay(date string, schedules ...Schedule) Day {
 			s = append(s, x)
 		}
 	}
-	return Day{date,s}
+
+	return Day{date,scheduleSort(s...)}
+}
+
+
+func scheduleSort(Schedules ...Schedule) []Schedule{
+	for i := len(Schedules)-1; i >= 0; i-=1 {
+		//log.Println(i)
+		for x := range i {
+			//log.Println(x)
+			if Schedules[x].StartTime.Compare(Schedules[x+1].StartTime) > 0 {
+				temp := Schedules[x]
+				Schedules[x] = Schedules[x+1]
+				Schedules[x+1] = temp
+			}
+			
+		}
+	}
+	return Schedules
 }
 
 

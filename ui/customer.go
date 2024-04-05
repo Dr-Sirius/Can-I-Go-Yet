@@ -1,6 +1,7 @@
 package ui
 
 import (
+	
 	_ "fmt"
 	"image/color"
 	"time"
@@ -13,7 +14,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-var updateTime time.Duration = 5 * time.Second
+//var updateTime time.Duration = 5 * time.Second
 
 func CustomerView(app fyne.App) {
 
@@ -33,21 +34,19 @@ func CustomerView(app fyne.App) {
 	officeHoursLBL.TextSize = 25
 	officeHoursLBL.Alignment = fyne.TextAlignCenter
 
-	btn := widget.NewButton("Fullscreen", func() {})
-	btn.Alignment = widget.ButtonAlign(fyne.TextAlignCenter)
 	logo := canvas.NewImageFromResource(resourceLogoPng)
-	logo.Resize(fyne.NewSize(200,200))
 
 	
 
 	go func() {
+		updateClock(ctLBL)
 		for range time.Tick(time.Second) {
 			updateClock(ctLBL)
 		}
 	}()
 
-	content := container.NewAdaptiveGrid(
-		2,
+	content := container.New(
+		layout.NewAdaptiveGridLayout(3),
 		logo,
 		container.New(
 			layout.NewVBoxLayout(),
@@ -55,7 +54,6 @@ func CustomerView(app fyne.App) {
 			ctLBL,
 			officeHoursLBL,
 		),
-		NewFullScreenButton("cheese"),
 	)
 	myWindow.SetContent(content)
 	myWindow.Show()

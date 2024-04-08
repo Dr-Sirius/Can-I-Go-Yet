@@ -17,6 +17,7 @@ const (
 	HDAY // holiday
 )
 
+// A struct for holding a s
 type Schedule struct {
 	StartTime time.Time
 	EndTime   time.Time
@@ -30,10 +31,18 @@ type Day struct {
 	Schedules []Schedule
 }
 
+/* 
+Creates a new Schedule struct from formated strings and flags
+
+EX. st & et -> 12:30 am - date -> 2024-08-19
+*/
 func NewSchedule(st string, et string, date string, flags ...int) Schedule {
 	return NewScheduleFromTime(convertTime(st, date), convertTime(et, date), flags...)
 }
 
+/* 
+Creates a new Schedule struct from time.Time structs and flags
+*/
 func NewScheduleFromTime(st time.Time, et time.Time, flags ...int) Schedule {
 	f := make(map[int]bool)
 	for _, x := range flags {
@@ -42,6 +51,9 @@ func NewScheduleFromTime(st time.Time, et time.Time, flags ...int) Schedule {
 	return Schedule{st, et, f}
 }
 
+/*
+converts string formatted dates into a time.Time struct
+*/
 func convertTime(s string, d string) time.Time {
 	format := "2006-01-02 3:04 pm"
 	s = d + " " + s
@@ -56,6 +68,9 @@ func convertTime(s string, d string) time.Time {
 	return t
 }
 
+/*
+Creates a new Day struct which holds Schedule structs for a specified date
+*/
 func NewDay(date string, schedules ...Schedule) Day {
 	s := make([]Schedule, 0)
 	for _, x := range schedules {
@@ -75,11 +90,16 @@ func NewDay(date string, schedules ...Schedule) Day {
 	return Day{date, scheduleSort(s...)}
 }
 
+/*
+Sorts schedules based on the start time
+
+Uses a bubble sort algorithm
+*/
 func scheduleSort(Schedules ...Schedule) []Schedule {
 	for i := len(Schedules) - 1; i >= 0; i -= 1 {
-		//log.Println(i)
+		//log.Println(i) // for debug
 		for x := range i {
-			//log.Println(x)
+			//log.Println(x) // for debug
 			if Schedules[x].StartTime.Compare(Schedules[x+1].StartTime) > 0 {
 				temp := Schedules[x]
 				Schedules[x] = Schedules[x+1]
@@ -91,6 +111,11 @@ func scheduleSort(Schedules ...Schedule) []Schedule {
 	return Schedules
 }
 
+/*
+Returns the StartTime as a formated string 
+
+EX. time.Time -> 7:00 am
+*/
 func (s Schedule) StringStartTime() string {
 	h, m, _ := s.StartTime.Clock()
 	tm := "am"
@@ -112,6 +137,11 @@ func (s Schedule) StringStartTime() string {
 	return hs + ":" + ms + " " + tm
 }
 
+/*
+Returns the EndTime as a formated string 
+
+EX. time.Time -> 7:00 am
+*/
 func (s Schedule) StringEndTime() string {
 	h, m, _ := s.EndTime.Clock()
 	tm := "am"
@@ -133,6 +163,9 @@ func (s Schedule) StringEndTime() string {
 	return hs + ":" + ms + " " + tm
 }
 
+/*
+Returns an array of Schedule structs from the Schedules folder
+*/
 func LoadSchedules() []Schedule {
 	file, err := os.Open("../../Schedules/Schedules.csv")
 

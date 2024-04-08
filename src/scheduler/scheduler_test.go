@@ -23,3 +23,10 @@ func TestNewDay(t *testing.T) {
 	}
 	log.Println(NewDay("2024-08-19",s...))
 }
+
+
+func TestLoadSchedules(t *testing.T) {
+	for _,x := range LoadSchedules() {
+		log.Println(x)
+	}
+}

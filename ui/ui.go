@@ -12,7 +12,6 @@ import (
 func Run() {
 	myApp := app.New()
 	myApp.Settings().SetTheme(&defaultTheme{})
-	CustomerView(myApp)
-	
+	UserView(myApp)
 	myApp.Run()
 }

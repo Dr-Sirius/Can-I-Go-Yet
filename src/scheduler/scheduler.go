@@ -1,15 +1,20 @@
 package scheduler
 
 import (
+	"encoding/csv"
 	"fmt"
 	"log"
+	"os"
+	"strings"
 	"time"
+	"strconv"
 )
 
 const (
 	OPEN int = iota
-	UNDS     // understaffed
-	HDAY     // holiday
+	BRKE
+	UNDS // understaffed
+	HDAY // holiday
 )
 
 type Schedule struct {
@@ -51,16 +56,15 @@ func convertTime(s string, d string) time.Time {
 	return t
 }
 
-
 func NewDay(date string, schedules ...Schedule) Day {
-	s := make([]Schedule,0)
-	for _,x := range schedules {
-		y,m,d := x.StartTime.Date()
+	s := make([]Schedule, 0)
+	for _, x := range schedules {
+		y, m, d := x.StartTime.Date()
 		mt := fmt.Sprint(int(m))
 		if int(m) < 10 {
-			mt = "0"+mt
+			mt = "0" + mt
 		}
-		
+
 		dt := fmt.Sprint(y) + "-" + mt + "-" + fmt.Sprint(d)
 		log.Println(dt)
 		if dt == date {
@@ -68,12 +72,11 @@ func NewDay(date string, schedules ...Schedule) Day {
 		}
 	}
 
-	return Day{date,scheduleSort(s...)}
+	return Day{date, scheduleSort(s...)}
 }
 
-
-func scheduleSort(Schedules ...Schedule) []Schedule{
-	for i := len(Schedules)-1; i >= 0; i-=1 {
+func scheduleSort(Schedules ...Schedule) []Schedule {
+	for i := len(Schedules) - 1; i >= 0; i -= 1 {
 		//log.Println(i)
 		for x := range i {
 			//log.Println(x)
@@ -82,47 +85,85 @@ func scheduleSort(Schedules ...Schedule) []Schedule{
 				Schedules[x] = Schedules[x+1]
 				Schedules[x+1] = temp
 			}
-			
+
 		}
 	}
 	return Schedules
 }
 
-
 func (s Schedule) StringStartTime() string {
-	h,m,_ := s.StartTime.Clock()
+	h, m, _ := s.StartTime.Clock()
 	tm := "am"
 
 	if h > 12 {
 		h = h - 12
 		tm = "pm"
 	}
-	if h == 12 {tm = "pm"}
+	if h == 12 {
+		tm = "pm"
+	}
 
 	hs := fmt.Sprint(h)
 	ms := fmt.Sprint(m)
-	
-	if m < 10 && m!=0 {
+
+	if m < 10 && m != 0 {
 		ms = "0" + ms
 	}
-	return hs + ":" + ms + " " + tm 
+	return hs + ":" + ms + " " + tm
 }
 
 func (s Schedule) StringEndTime() string {
-	h,m,_ := s.EndTime.Clock()
+	h, m, _ := s.EndTime.Clock()
 	tm := "am"
 
 	if h > 12 {
 		h = h - 12
 		tm = "pm"
 	}
-	if h == 12 {tm = "pm"}
+	if h == 12 {
+		tm = "pm"
+	}
 
 	hs := fmt.Sprint(h)
 	ms := fmt.Sprint(m)
-	
-	if m < 10 && m!=0 {
+
+	if m < 10 && m != 0 {
 		ms = "0" + ms
 	}
-	return hs + ":" + ms + " " + tm 
+	return hs + ":" + ms + " " + tm
+}
+
+func LoadSchedules() []Schedule {
+	file, err := os.Open("../../Schedules/Schedules.csv")
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+
+	records, err := reader.ReadAll()
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	var s []Schedule
+
+	for _, r := range records[1:] {
+		f := strings.Split(r[3],"|")
+		var fs []int
+		for _,x := range f {
+			cf,err := strconv.Atoi(strings.Trim(x," "))
+			if err != nil {
+				log.Println(err)
+			}
+			fs = append(fs, cf)
+		}
+		ns := NewSchedule(r[1], r[2], r[0],fs...)
+		s = append(s, ns)
+	}
+	return s
 }

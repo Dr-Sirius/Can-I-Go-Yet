@@ -68,6 +68,7 @@ func convertTime(s string, d string) time.Time {
 	return t
 }
 
+
 /*
 Creates a new Day struct which holds Schedule structs for a specified date
 */
@@ -90,6 +91,30 @@ func NewDay(date string, schedules ...Schedule) Day {
 	return Day{date, scheduleSort(s...)}
 }
 
+
+/*
+Creates a new Day struct which holds Schedule structs for a specified date
+*/
+func NewDayFromTime(date time.Time, schedules ...Schedule) Day {
+	s := make([]Schedule, 0)
+	dy,dm,dd := date.Date()
+	for _, x := range schedules {
+		
+		sy,sm,sd := x.StartTime.Date()
+		if dy == sy && dm == sm && dd == sd{
+			s = append(s, x)
+		}
+	}
+	mt := fmt.Sprint(int(dm))
+	if int(dm) < 10 {
+		mt = "0" + mt
+	}
+
+	dt := fmt.Sprint(dy) + "-" + mt + "-" + fmt.Sprint(dd)
+
+	return Day{dt, scheduleSort(s...)}
+}
+
 /*
 Sorts schedules based on the start time
 
@@ -109,6 +134,12 @@ func scheduleSort(Schedules ...Schedule) []Schedule {
 		}
 	}
 	return Schedules
+}
+
+func (s Schedule) String() string {
+	st := s.StringStartTime()
+	et := s.StringEndTime()
+	return st + " - " + et + " " + fmt.Sprint(s.Flags)
 }
 
 /*
@@ -167,7 +198,7 @@ func (s Schedule) StringEndTime() string {
 Returns an array of Schedule structs from the Schedules folder
 */
 func LoadSchedules() []Schedule {
-	file, err := os.Open("../../Schedules/Schedules.csv")
+	file, err := os.Open("Schedules/Schedules.csv")
 
 	if err != nil {
 		log.Println(err)
@@ -200,3 +231,4 @@ func LoadSchedules() []Schedule {
 	}
 	return s
 }
+

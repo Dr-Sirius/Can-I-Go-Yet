@@ -18,9 +18,10 @@ func Run() {
 	app := app.New()
 	//app.Settings().SetTheme(&defaultTheme{})
 	myWindow := app.NewWindow("Can I Go Yet?")
-
+	
 	content := container.New(
 		layout.NewAdaptiveGridLayout(3),
+		widget.NewSeparator(),
 		widget.NewLabel("Today's Schedules"),
 		DailyList(),
 	)

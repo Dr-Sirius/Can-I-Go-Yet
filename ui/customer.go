@@ -14,11 +14,11 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-//var updateTime time.Duration = 5 * time.Second
 
-func CustomerView(app fyne.App) {
 
-	myWindow := app.NewWindow("Customer View")
+func CustomerView() {
+
+	myWindow := fyne.CurrentApp().NewWindow("Customer View")
 	myWindow.Resize(fyne.NewSize(800, 600))
 	
 
@@ -42,6 +42,7 @@ func CustomerView(app fyne.App) {
 		updateClock(ctLBL)
 		for range time.Tick(time.Second) {
 			updateClock(ctLBL)
+			checkTime(openLBL)
 		}
 	}()
 
@@ -65,6 +66,10 @@ func updateClock(clock *canvas.Text) {
 	clock.Text = currentTime
 	clock.Refresh()
 
+}
+
+func checkTime(txt *canvas.Text) {
+	
 }
 
 func NewFullScreenButton(text string) *widget.Label {

@@ -188,7 +188,7 @@ func (s Schedule) StringEndTime() string {
 	hs := fmt.Sprint(h)
 	ms := fmt.Sprint(m)
 
-	if m < 10 && m != 0 {
+	if m < 10 {
 		ms = "0" + ms
 	}
 	return hs + ":" + ms + " " + tm

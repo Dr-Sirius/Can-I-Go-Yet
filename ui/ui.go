@@ -24,26 +24,32 @@ func Run() {
 	todayLBL := canvas.NewText("Today's Schedule", color.White)
 	todayLBL.TextSize = 35
 
+	customerBTN := widget.NewButton("Customer View", func() {
+		CustomerView()
+	})
+
 	content := container.New(
-		layout.NewAdaptiveGridLayout(4),
-		layout.NewSpacer(),
-		layout.NewSpacer(),
+		layout.NewCenterLayout(),
+		
 		container.NewGridWithRows(
-			5,
-			layout.NewSpacer(),
-			layout.NewSpacer(),
+			2,
 			todayLBL,
 			DailyList(),
 		),
+		customerBTN,
+
 	)
 	
 	myWindow.SetContent(content)
-	myWindow.Resize(fyne.NewSize(800, 600))
+	myWindow.Resize(fyne.NewSize(200,200))
+	//myWindow.SetFixedSize(true)
 	myWindow.ShowAndRun()
+	
 }
 
 func DailyList() *widget.List {
 	data := scheduler.NewDayFromTime(time.Now(), src.Schedules...)
+	sch = data.Schedules
 	return widget.NewList(
 		func() int {
 			return len(data.Schedules)

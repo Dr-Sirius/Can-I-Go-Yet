@@ -4,6 +4,7 @@ import (
 	"can-i-go-yet/src"
 	"can-i-go-yet/src/scheduler"
 	"image/color"
+	"log"
 
 	"time"
 
@@ -30,32 +31,32 @@ func Run() {
 
 	content := container.New(
 		layout.NewCenterLayout(),
-		
+
 		container.NewGridWithRows(
 			2,
 			todayLBL,
 			DailyList(),
 		),
 		customerBTN,
-
 	)
-	
+
 	myWindow.SetContent(content)
-	myWindow.Resize(fyne.NewSize(200,200))
+	myWindow.Resize(fyne.NewSize(200, 200))
 	//myWindow.SetFixedSize(true)
 	myWindow.ShowAndRun()
-	
+
 }
 
 func DailyList() *widget.List {
 	data := scheduler.NewDayFromTime(time.Now(), src.Schedules...)
+	log.Println(data)
 	sch = data.Schedules
 	return widget.NewList(
 		func() int {
 			return len(data.Schedules)
 		},
 		func() fyne.CanvasObject {
-			lbl := canvas.NewText("template",color.White)
+			lbl := canvas.NewText("template", color.White)
 			lbl.TextSize = 15
 			return lbl
 		},

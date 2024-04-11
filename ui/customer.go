@@ -16,6 +16,7 @@ import (
 
 var sch []scheduler.Schedule
 var currentSch int
+var stayOpen bool = false
 
 func CustomerView() {
 
@@ -85,7 +86,7 @@ func checkTime(txt *canvas.Text) {
 		txt.Text = "Open"
 		txt.Color = color.RGBA{50, 205, 50, 255}
 	} else {
-		if time.Now().Equal(sch[currentSch].EndTime) {
+		if time.Now().Equal(sch[currentSch].EndTime) || time.Now().After(sch[currentSch].EndTime) {
 			log.Println("Endtime")
 			if (currentSch + 1) != len(sch) {
 				currentSch += 1
@@ -100,6 +101,14 @@ func checkTime(txt *canvas.Text) {
 			log.Println("Starttime")
 			checkFlags(txt)
 			
+		} else {
+			if stayOpen {
+				txt.Text = "Open"
+				txt.Color = color.RGBA{255, 255, 0, 255}
+			} else {
+				txt.Text = "Closed"
+				txt.Color = color.RGBA{R: 255, G: 0, B: 0, A: 255}
+			}
 		}
 	}
 	txt.Refresh()

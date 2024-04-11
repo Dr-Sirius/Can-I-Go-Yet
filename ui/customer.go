@@ -80,14 +80,13 @@ func setTime() {
 }
 
 func checkTime(txt *canvas.Text) {
-	log.Println(txt)
 	if len(sch) == 0 {
 		log.Println("SCH = 0")
 		txt.Text = "Open"
 		txt.Color = color.RGBA{50, 205, 50, 255}
 	} else {
 		if time.Now().Equal(sch[currentSch].EndTime) || time.Now().After(sch[currentSch].EndTime) {
-			log.Println("Endtime")
+			
 			if (currentSch + 1) != len(sch) {
 				currentSch += 1
 				checkTime(txt)
@@ -98,7 +97,7 @@ func checkTime(txt *canvas.Text) {
 			}
 
 		} else if time.Now().Equal(sch[currentSch].StartTime) || time.Now().After(sch[currentSch].StartTime) {
-			log.Println("Starttime")
+			
 			checkFlags(txt)
 			
 		} else {
@@ -128,12 +127,10 @@ func checkFlags(txt *canvas.Text) {
 		}
 
 	} else if _, ok := flags[scheduler.OPEN]; ok {
-		log.Println("Open")
 		txt.Text = "Open"
 		txt.Color = color.RGBA{54, 100, 75, 255}
 
 	} else {
-		log.Println("Closed")
 		txt.Text = "Closed"
 		txt.Color = color.RGBA{R: 255, G: 0, B: 0, A: 255}
 	}

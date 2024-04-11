@@ -2,12 +2,13 @@ package scheduler
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
-	"strconv"
 )
 
 const (
@@ -31,7 +32,7 @@ type Day struct {
 	Schedules []Schedule
 }
 
-/* 
+/*
 Creates a new Schedule struct from formated strings and flags
 
 EX. st & et -> 12:30 am - date -> 2024-08-19
@@ -40,7 +41,7 @@ func NewSchedule(st string, et string, date string, flags ...int) Schedule {
 	return NewScheduleFromTime(convertTime(st, date), convertTime(et, date), flags...)
 }
 
-/* 
+/*
 Creates a new Schedule struct from time.Time structs and flags
 */
 func NewScheduleFromTime(st time.Time, et time.Time, flags ...int) Schedule {
@@ -68,7 +69,6 @@ func convertTime(s string, d string) time.Time {
 	return t
 }
 
-
 /*
 Creates a new Day struct which holds Schedule structs for a specified date
 */
@@ -91,17 +91,16 @@ func NewDay(date string, schedules ...Schedule) Day {
 	return Day{date, scheduleSort(s...)}
 }
 
-
 /*
 Creates a new Day struct which holds Schedule structs for a specified date
 */
 func NewDayFromTime(date time.Time, schedules ...Schedule) Day {
 	s := make([]Schedule, 0)
-	dy,dm,dd := date.Date()
+	dy, dm, dd := date.Date()
 	for _, x := range schedules {
-		
-		sy,sm,sd := x.StartTime.Date()
-		if dy == sy && dm == sm && dd == sd{
+
+		sy, sm, sd := x.StartTime.Date()
+		if dy == sy && dm == sm && dd == sd {
 			s = append(s, x)
 		}
 	}
@@ -143,7 +142,7 @@ func (s Schedule) String() string {
 }
 
 /*
-Returns the StartTime as a formated string 
+Returns the StartTime as a formated string
 
 EX. time.Time -> 7:00 am
 */
@@ -162,14 +161,14 @@ func (s Schedule) StringStartTime() string {
 	hs := fmt.Sprint(h)
 	ms := fmt.Sprint(m)
 
-	if m < 10{
+	if m < 10 {
 		ms = "0" + ms
 	}
 	return hs + ":" + ms + " " + tm
 }
 
 /*
-Returns the EndTime as a formated string 
+Returns the EndTime as a formated string
 
 EX. time.Time -> 7:00 am
 */
@@ -198,6 +197,14 @@ func (s Schedule) StringEndTime() string {
 Returns an array of Schedule structs from the Schedules folder
 */
 func LoadSchedules() []Schedule {
+	if _, err := os.Stat("Schedules/Schedules.csv"); errors.Is(err, os.ErrNotExist) {
+		if err := os.Mkdir("Schedules", os.ModePerm); err != nil {
+			log.Println(err)
+		} else {
+			os.Create("Schedules/Schedules.csv")
+			os.WriteFile("Schedules/Schedules.csv",[]byte("Date, Start_Time, End_Time, Flags"),os.ModePerm)
+		}
+	}
 	file, err := os.Open("Schedules/Schedules.csv")
 
 	if err != nil {
@@ -217,18 +224,17 @@ func LoadSchedules() []Schedule {
 	var s []Schedule
 
 	for _, r := range records[1:] {
-		f := strings.Split(r[3],"|")
+		f := strings.Split(r[3], "|")
 		var fs []int
-		for _,x := range f {
-			cf,err := strconv.Atoi(strings.Trim(x," "))
+		for _, x := range f {
+			cf, err := strconv.Atoi(strings.Trim(x, " "))
 			if err != nil {
 				log.Println(err)
 			}
 			fs = append(fs, cf)
 		}
-		ns := NewSchedule(r[1], r[2], r[0],fs...)
+		ns := NewSchedule(r[1], r[2], r[0], fs...)
 		s = append(s, ns)
 	}
 	return s
 }
-

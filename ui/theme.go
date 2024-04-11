@@ -12,7 +12,7 @@ type defaultTheme struct{}
 var _ fyne.Theme = (*defaultTheme)(nil)
 
 func (t defaultTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
-
+	
 	return color.White
 }
 

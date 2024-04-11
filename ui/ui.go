@@ -14,13 +14,14 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	_ "fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
 func Run() {
 	app := app.New()
-	//app.Settings().SetTheme(&defaultTheme{})
+	app.Settings().SetTheme(theme.LightTheme())
 	myWindow := app.NewWindow("Can I Go Yet?")
 	todayLBL := canvas.NewText("Today's Schedule", color.White)
 	todayLBL.TextSize = 35
@@ -56,6 +57,7 @@ func DailyList() *widget.List {
 			return len(data.Schedules)
 		},
 		func() fyne.CanvasObject {
+			
 			lbl := canvas.NewText("template", color.White)
 			lbl.TextSize = 15
 			return lbl

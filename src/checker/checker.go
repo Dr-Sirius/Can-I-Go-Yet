@@ -28,7 +28,7 @@ func CheckTime() (string, color.Color) {
 		log.Println("SCH = 0")
 		return setOpen()
 
-	} else if time.Now().Equal(sch[currentSch].StartTime) || time.Now().After(sch[currentSch].StartTime) {
+	} else if time.Now().Equal(sch[currentSch].StartTime) || (time.Now().After(sch[currentSch].StartTime) && time.Now().Before(sch[currentSch].EndTime)) {
 		log.Println("Starttime")
 		return CheckFlags()
 

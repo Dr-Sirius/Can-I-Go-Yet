@@ -141,6 +141,22 @@ func (s Schedule) String() string {
 	return st + " - " + et + " " + fmt.Sprint(s.Flags)
 }
 
+func (s Schedule) PrettyString() string {
+	st := s.StringStartTime()
+	et := s.StringEndTime()
+	f := func() string {
+		str := ""
+		for i := range s.Flags {
+			if i == OPEN {str+= "|Open"}
+			if i == BRKE {str+= "|Break"}
+			if i == UNDS {str+= "|Understaffed"}
+			if i == HDAY {str+= "|Holiday"}
+		}
+		return str
+	}
+	return st + " - " + et + " " + f()
+}
+
 /*
 Returns the StartTime as a formated string
 

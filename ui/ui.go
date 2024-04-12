@@ -1,12 +1,8 @@
 package ui
 
 import (
-	"can-i-go-yet/src"
-	"can-i-go-yet/src/scheduler"
+	"can-i-go-yet/src/checker"
 	"image/color"
-	"log"
-
-	"time"
 
 	"fyne.io/fyne/v2"
 	_ "fyne.io/fyne/v2"
@@ -49,21 +45,21 @@ func Run() {
 }
 
 func DailyList() *widget.List {
-	data := scheduler.NewDayFromTime(time.Now(), src.Schedules...)
-	log.Println(data)
-	sch = data.Schedules
+
+	data := checker.GetSchedules()
+
 	return widget.NewList(
 		func() int {
-			return len(data.Schedules)
+			return len(data)
 		},
 		func() fyne.CanvasObject {
-			
+
 			lbl := canvas.NewText("template", color.White)
 			lbl.TextSize = 15
 			return lbl
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
-			o.(*canvas.Text).Text = data.Schedules[i].String()
+			o.(*canvas.Text).Text = data[i].String()
 		},
 	)
 }

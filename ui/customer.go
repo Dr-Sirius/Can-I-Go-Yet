@@ -1,18 +1,20 @@
 package ui
 
 import (
+	"can-i-go-yet/src/checker"
 	_ "fmt"
 	"image/color"
 	"time"
-	"can-i-go-yet/src/checker"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	_ "fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/widget"
 )
 
-func CustomerView() {
+func CustomerView(txt *widget.Label) {
 
 	myWindow := fyne.CurrentApp().NewWindow("Customer View")
 

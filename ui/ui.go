@@ -19,9 +19,11 @@ func Run() {
 	app.Settings().SetTheme(theme.LightTheme())
 	myWindow := app.NewWindow("Can I Go Yet?")
 
-	content := container.NewDocTabs(
+	content := container.NewAppTabs(
 		container.NewTabItem("Today", DailyTab()),
+		container.NewTabItem("Add Schedule", AddForm()),
 	)
+	
 
 	myWindow.SetContent(content)
 	myWindow.Resize(fyne.NewSize(200, 200))
@@ -50,25 +52,28 @@ func DailyList() *widget.List {
 	)
 }
 
-func DailyTab() *container.Split {
+func DailyTab() *fyne.Container{
 	todayLBL := canvas.NewText("Today's Schedule", color.Black)
 	todayLBL.TextSize = 35
+
+	currentLBL := widget.NewLabel("")
 
 	customerBTN := widget.NewButton("Customer View", func() {
 		CustomerView()
 	})
-	return container.NewHSplit(
-		container.NewGridWithRows(
-			3,
+	return container.NewGridWithRows(
+			4,
 			todayLBL,
 			DailyList(),
+			currentLBL,
 			customerBTN,
-		),
-		AddForm(),
-	)
+		)
+	
 }
 
 func AddForm() *widget.Form {
+	dtEntry := widget.NewEntry()
+	dtEntry.SetPlaceHolder("2024-01-01")
 	stEntry := widget.NewEntry()
 	stEntry.SetPlaceHolder("12:00 am")
 	etEntry := widget.NewEntry()
@@ -84,6 +89,7 @@ func AddForm() *widget.Form {
 	}
 	return &widget.Form{
 		Items: []*widget.FormItem{ // we can specify items in the constructor
+			{Text: "Date", Widget: dtEntry},
 			{Text: "Start Time", Widget: stEntry},
 			{Text: "End Time", Widget: etEntry},
 			{Text: "Flags", Widget: &flags},

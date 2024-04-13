@@ -18,9 +18,11 @@ func SetTime() {
 	for i, x := range sch {
 		if time.Now().Equal(x.StartTime) || (time.Now().After(x.StartTime) && time.Now().Before(x.EndTime)) {
 			currentSch = i
-			break
+			return
 		}
 	}
+	currentSch = 0
+	sch = []scheduler.Schedule{{},}
 }
 
 func CheckTime() (string, color.Color) {
@@ -85,4 +87,8 @@ func setOnBreak() (string, color.Color) {
 
 func GetSchedules() []scheduler.Schedule{
 	return sch
+}
+
+func GetCurrentSchedule() scheduler.Schedule {
+	return sch[currentSch]
 }

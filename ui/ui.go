@@ -3,6 +3,7 @@ package ui
 import (
 	"can-i-go-yet/src/checker"
 	"image/color"
+	"time"
 
 	"fyne.io/fyne/v2"
 	_ "fyne.io/fyne/v2"
@@ -23,7 +24,6 @@ func Run() {
 		container.NewTabItem("Today", DailyTab()),
 		container.NewTabItem("Add Schedule", AddForm()),
 	)
-	
 
 	myWindow.SetContent(content)
 	myWindow.Resize(fyne.NewSize(200, 200))
@@ -52,23 +52,29 @@ func DailyList() *widget.List {
 	)
 }
 
-func DailyTab() *fyne.Container{
+func DailyTab() *fyne.Container {
 	todayLBL := canvas.NewText("Today's Schedule", color.Black)
 	todayLBL.TextSize = 35
 
-	currentLBL := widget.NewLabel("")
+	currentLBL := canvas.NewText("Current Schedule: " + checker.GetCurrentSchedule().PrettyString(),color.Black)
 
 	customerBTN := widget.NewButton("Customer View", func() {
 		CustomerView()
 	})
+
+	go func() {
+		for range time.Tick(time.Second) {
+			currentLBL.Text = "Current Schedule: " + checker.GetCurrentSchedule().PrettyString()
+		}
+	}()
 	return container.NewGridWithRows(
-			4,
-			todayLBL,
-			DailyList(),
-			currentLBL,
-			customerBTN,
-		)
-	
+		4,
+		todayLBL,
+		DailyList(),
+		currentLBL,
+		customerBTN,
+	)
+
 }
 
 func AddForm() *widget.Form {

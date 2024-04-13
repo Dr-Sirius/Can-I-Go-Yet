@@ -11,10 +11,10 @@ import (
 	"fyne.io/fyne/v2/container"
 	_ "fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
-	"fyne.io/fyne/v2/widget"
+	
 )
 
-func CustomerView(txt *widget.Label) {
+func CustomerView() {
 
 	myWindow := fyne.CurrentApp().NewWindow("Customer View")
 

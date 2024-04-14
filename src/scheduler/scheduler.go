@@ -13,12 +13,12 @@ import (
 
 const (
 	OPEN int = iota
-	BRKE
+	BRKE // break
 	UNDS // understaffed
 	HDAY // holiday
 )
 
-// A struct for holding a s
+// A struct for holding schedule info
 type Schedule struct {
 	StartTime time.Time
 	EndTime   time.Time
@@ -121,9 +121,9 @@ Uses a bubble sort algorithm
 */
 func scheduleSort(Schedules ...Schedule) []Schedule {
 	for i := len(Schedules) - 1; i >= 0; i -= 1 {
-		//log.Println(i) // for debug
+		
 		for x := range i {
-			//log.Println(x) // for debug
+			
 			if Schedules[x].StartTime.Compare(Schedules[x+1].StartTime) > 0 {
 				temp := Schedules[x]
 				Schedules[x] = Schedules[x+1]
@@ -253,4 +253,30 @@ func LoadSchedules() []Schedule {
 		s = append(s, ns)
 	}
 	return s
+}
+
+
+func AddSchedule(date string, startTime string, endTime string, flags ...int) {
+	flagString := ""
+	for _,f := range flags {
+		flagString += fmt.Sprint(f) + "|"
+	}
+
+	sch := "\n" + date + ", " + startTime + ", " + endTime + ", " + flagString
+
+	file,err := os.OpenFile("Schedules/Schedules.csv", os.O_APPEND, 0644)
+    
+    if err != nil {
+		log.Println(err)
+      
+	}
+
+	defer file.Close()
+	
+	_, err = file.WriteString(sch)
+
+	if err != nil {
+		log.Println(err)
+      
+	}
 }

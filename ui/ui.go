@@ -2,6 +2,7 @@ package ui
 
 import (
 	"can-i-go-yet/src/checker"
+	"can-i-go-yet/src/scheduler"
 	"image/color"
 	"time"
 
@@ -56,7 +57,7 @@ func DailyTab() *fyne.Container {
 	todayLBL := canvas.NewText("Today's Schedule", color.Black)
 	todayLBL.TextSize = 35
 
-	currentLBL := canvas.NewText("Current Schedule: " + checker.GetCurrentSchedule().PrettyString(),color.Black)
+	currentLBL := canvas.NewText("Current Schedule: "+checker.GetCurrentSchedule().PrettyString(), color.Black)
 
 	customerBTN := widget.NewButton("Customer View", func() {
 		CustomerView()
@@ -86,6 +87,7 @@ func AddForm() *widget.Form {
 	etEntry.SetPlaceHolder("12:00 pm")
 	flags := widget.CheckGroup{
 		Horizontal: true,
+		Required:   true,
 		Options: []string{
 			"Open",
 			"Break",
@@ -99,6 +101,9 @@ func AddForm() *widget.Form {
 			{Text: "Start Time", Widget: stEntry},
 			{Text: "End Time", Widget: etEntry},
 			{Text: "Flags", Widget: &flags},
+		},
+		OnSubmit: func() {
+			scheduler.AddSchedule(dtEntry.Text, stEntry.Text, etEntry.Text, checker.CreateFlags(flags.Selected)...)
 		},
 	}
 }

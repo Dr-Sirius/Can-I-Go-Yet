@@ -22,7 +22,7 @@ func SetTime() {
 		}
 	}
 	currentSch = 0
-	sch = []scheduler.Schedule{{},}
+	
 }
 
 func CheckTime() (string, color.Color) {
@@ -91,4 +91,16 @@ func GetSchedules() []scheduler.Schedule{
 
 func GetCurrentSchedule() scheduler.Schedule {
 	return sch[currentSch]
+}
+
+
+func CreateFlags(flags []string) []int{
+	f := []int{}
+	for _,x := range flags {
+		if x == "Open" {f = append(f, scheduler.OPEN)}
+		if x == "Break" {f = append(f, scheduler.BRKE)}
+		if x == "Understaffed" {f = append(f, scheduler.UNDS)}
+		if x == "Holiday" {f = append(f, scheduler.HDAY)}
+	}
+	return f
 }

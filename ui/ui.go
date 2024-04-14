@@ -125,14 +125,17 @@ func Remove() *fyne.Container {
 		}
 		checker.Remove(selected)
 		selected = -1
+		rl.UnselectAll()
 		rl.Refresh()
 	})
 	
 	rl.OnSelected = func(id widget.ListItemID) {
 		lbl.Text = "Remove " + checker.GetSchedules()[id].PrettyString() + " ?"
 		selected = id
+		
 		lbl.Refresh()
 	}
+	
 
 
 	return container.NewGridWithRows(

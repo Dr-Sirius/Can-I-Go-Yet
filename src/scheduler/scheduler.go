@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -13,9 +14,9 @@ import (
 
 const (
 	OPEN int = iota
-	BRKE // break
-	UNDS // understaffed
-	HDAY // holiday
+	BRKE     // break
+	UNDS     // understaffed
+	HDAY     // holiday
 )
 
 // A struct for holding schedule info
@@ -121,9 +122,9 @@ Uses a bubble sort algorithm
 */
 func scheduleSort(Schedules ...Schedule) []Schedule {
 	for i := len(Schedules) - 1; i >= 0; i -= 1 {
-		
+
 		for x := range i {
-			
+
 			if Schedules[x].StartTime.Compare(Schedules[x+1].StartTime) > 0 {
 				temp := Schedules[x]
 				Schedules[x] = Schedules[x+1]
@@ -147,10 +148,18 @@ func (s Schedule) PrettyString() string {
 	f := func() string {
 		str := ""
 		for i := range s.Flags {
-			if i == OPEN {str+= "|Open"}
-			if i == BRKE {str+= "|Break"}
-			if i == UNDS {str+= "|Understaffed"}
-			if i == HDAY {str+= "|Holiday"}
+			if i == OPEN {
+				str += "|Open"
+			}
+			if i == BRKE {
+				str += "|Break"
+			}
+			if i == UNDS {
+				str += "|Understaffed"
+			}
+			if i == HDAY {
+				str += "|Holiday"
+			}
 		}
 		return str
 	}
@@ -209,6 +218,41 @@ func (s Schedule) StringEndTime() string {
 	return hs + ":" + ms + " " + tm
 }
 
+func (s Schedule) Equal(o Schedule) bool {
+	return s.StartTime.Equal(o.StartTime) && s.EndTime.Equal(o.EndTime) && func() bool {
+		
+		if len(s.FlagsSlice()) != len(o.FlagsSlice()) {
+			return false
+		}
+		
+		for a := range len(s.FlagsSlice()) {
+			if s.FlagsSlice()[a] != o.FlagsSlice()[a] {
+				return false
+			}
+		}
+		return true
+
+	}()
+}
+
+func (s Schedule) Date() string {
+	y, m, d := s.StartTime.Date()
+	mt := fmt.Sprint(int(m))
+	if int(m) < 10 {
+		mt = "0" + mt
+	}
+
+	return fmt.Sprint(y) + "-" + mt + "-" + fmt.Sprint(d)
+}
+
+func (s Schedule) FlagsSlice() []int {
+	x := []int{}
+	for a, _ := range s.Flags {
+		x = append(x, a)
+	}
+	slices.Sort(x)
+	return x
+}
 /*
 Returns an array of Schedule structs from the Schedules folder
 */
@@ -218,7 +262,7 @@ func LoadSchedules() []Schedule {
 			log.Println(err)
 		} else {
 			os.Create("Schedules/Schedules.csv")
-			os.WriteFile("Schedules/Schedules.csv",[]byte("Date, Start_Time, End_Time, Flags"),os.ModePerm)
+			os.WriteFile("Schedules/Schedules.csv", []byte("Date, Start_Time, End_Time, Flags"), os.ModePerm)
 		}
 	}
 	file, err := os.Open("Schedules/Schedules.csv")
@@ -255,28 +299,46 @@ func LoadSchedules() []Schedule {
 	return s
 }
 
-
 func AddSchedule(date string, startTime string, endTime string, flags ...int) {
 	flagString := ""
-	for _,f := range flags {
+	for _, f := range flags {
 		flagString += fmt.Sprint(f) + "|"
 	}
 
 	sch := "\n" + date + ", " + startTime + ", " + endTime + ", " + flagString
 
-	file,err := os.OpenFile("Schedules/Schedules.csv", os.O_APPEND, 0644)
-    
-    if err != nil {
+	file, err := os.OpenFile("Schedules/Schedules.csv", os.O_APPEND, 0644)
+
+	if err != nil {
 		log.Println(err)
-      
+
 	}
 
 	defer file.Close()
-	
+
 	_, err = file.WriteString(sch)
 
 	if err != nil {
 		log.Println(err)
-      
+
+	}
+}
+
+func RemoveSchedule(s Schedule) {
+	sch := LoadSchedules()
+
+	for i, x := range sch {
+		if x.Equal(s) {
+			sch = append(sch[0:i], sch[i+1:]...)
+			break
+		}
+	}
+	if err := os.WriteFile("Schedules/Schedules.csv",[]byte("Date, Start_Time, End_Time, Flags"),os.ModePerm); err != nil {
+		log.Println(err)
+	}
+	
+
+	for _,x := range sch {
+		AddSchedule(x.Date(),x.StringStartTime(),x.StringEndTime(),x.FlagsSlice()...)
 	}
 }

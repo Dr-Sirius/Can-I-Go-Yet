@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"image/color"
 	"log"
-	"os"
 	"time"
 )
 
@@ -120,48 +119,19 @@ func GetStringSchedules() []string {
 
 func Remove(index int) {
 	if len(sch) == 1 {
-		sch[0] = scheduler.Schedule{}
+		fake := scheduler.NewScheduleFromTime(time.Time{},time.Time{},0)
+		sch[0] = fake
 		return
 	}
+	scheduler.RemoveSchedule(sch[index])
 	s := sch[0:index]
 	s = append(s, sch[index+1:]...)
 	sch = s
 
-	sd := scheduler.LoadSchedules() 
-	dy := scheduler.NewDayFromTime(time.Now(),sd...)
-	for i := len(sd)-1; i >= 0; i++{
-		y, m, d := sd[i].StartTime.Date()
-		mt := fmt.Sprint(int(m))
-		if int(m) < 10 {
-			mt = "0" + mt
-		}
 
-		dt := fmt.Sprint(y) + "-" + mt + "-" + fmt.Sprint(d)
-		if dt == dy.Date {
-			sd = remove(sd,i)
-		}
-	}
-
-	if err := os.WriteFile("Schedules/Schedules.csv",[]byte("Date, Start_Time, End_Time, Flags"),os.ModePerm); err != nil {
-		log.Println(err)
-	}
-	for _,x := range sd {
-		y, m, d := x.StartTime.Date()
-		mt := fmt.Sprint(int(m))
-		if int(m) < 10 {
-			mt = "0" + mt
-		}
-
-		dt := fmt.Sprint(y) + "-" + mt + "-" + fmt.Sprint(d)
-		f := []int{}
-		for y,_ := range x.Flags {
-			f = append(f, y)
-		}
-		scheduler.AddSchedule(dt,x.StringStartTime(),x.StringEndTime(),f...)
-	}
 }
 
-func remove(s []scheduler.Schedule, index int)  []scheduler.Schedule {
+func remove(s []scheduler.Schedule, index int) []scheduler.Schedule {
 	sd := s[0:index]
 	sd = append(sd, s[index+1:]...)
 	return sd

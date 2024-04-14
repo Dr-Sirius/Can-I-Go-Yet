@@ -90,8 +90,13 @@ func updateOpen(open *canvas.Text) {
 }
 
 func updateStatus(status *canvas.Text, open *canvas.Text) {
-	if open.Text == "Closed" {
+	if checker.Status == "Closed" {
 		status.Text = "The Tech Office will reopen at " + checker.GetReturnTime()
+		return
+	}
+	if checker.Status == "Break" {
+		status.Text = "There may be increased wait times"
+		return
 	}
 	status.Text = ""
 }

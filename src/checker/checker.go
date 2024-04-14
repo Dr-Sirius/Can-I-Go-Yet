@@ -12,6 +12,7 @@ var sch []scheduler.Schedule
 var currentSch int
 var stayOpen bool = false
 var Announcments string = ""
+var Status string = "Break"
 
 func SetTime() {
 	s := scheduler.LoadSchedules()
@@ -48,6 +49,7 @@ func CheckTime() (string, color.Color) {
 			currentSch += 1
 			CheckTime()
 		} else {
+			Status = "Closed"
 			return setClosed()
 
 		}
@@ -55,8 +57,10 @@ func CheckTime() (string, color.Color) {
 	}
 
 	if stayOpen {
+		Status = "Open"
 		return setOpen()
 	} else {
+		Status = "Closed"
 		return setClosed()
 	}
 
@@ -66,14 +70,18 @@ func CheckFlags() (string, color.Color) {
 	flags := sch[currentSch].Flags
 	if _, ok := flags[scheduler.BRKE]; ok {
 		if _, ok := flags[scheduler.UNDS]; ok {
+			Status = "Closed"
 			return setClosed()
 		} else {
+			Status = "Break"
 			return setOnBreak()
 		}
 
 	} else if _, ok := flags[scheduler.OPEN]; ok {
+		Status = "Open"
 		return setOpen()
 	} else {
+		Status = "Closed"
 		return setClosed()
 	}
 
@@ -88,7 +96,7 @@ func setClosed() (string, color.Color) {
 }
 
 func setOnBreak() (string, color.Color) {
-	return "Open", color.RGBA{255, 255, 0, 255}
+	return "Open", color.RGBA{255, 218, 28, 255}
 }
 
 func GetDate() string {

@@ -3,6 +3,7 @@ package ui
 import (
 	"can-i-go-yet/src/checker"
 	"can-i-go-yet/src/scheduler"
+
 	"image/color"
 	"time"
 
@@ -19,6 +20,7 @@ import (
 func Run() {
 	app := app.New()
 	app.Settings().SetTheme(theme.LightTheme())
+
 	myWindow := app.NewWindow("Can I Go Yet?")
 
 	content := container.NewAppTabs(
@@ -89,7 +91,6 @@ func AddForm() *widget.Form {
 	etEntry.SetPlaceHolder("12:00 pm")
 	flags := widget.CheckGroup{
 		Horizontal: true,
-		Required:   true,
 		Options: []string{
 			"Open",
 			"Break",

@@ -26,7 +26,7 @@ func (t defaultTheme) Size(name fyne.ThemeSizeName) float32 {
 
 func (t defaultTheme) Icon(name fyne.ThemeIconName) fyne.Resource {
 	
-	return theme.DefaultTheme().Icon(name)
+	return resourceLogoPng
 }
 
 

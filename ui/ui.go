@@ -24,6 +24,7 @@ func Run() {
 	content := container.NewAppTabs(
 		container.NewTabItem("Today", DailyTab()),
 		container.NewTabItem("Add Schedule", AddForm()),
+		container.NewTabItem("Remove Schedule", Remove()),
 	)
 
 	myWindow.SetContent(content)
@@ -34,8 +35,6 @@ func Run() {
 }
 
 func DailyList() *widget.List {
-
-	
 
 	return widget.NewList(
 		func() int {
@@ -64,7 +63,6 @@ func DailyTab() *fyne.Container {
 	customerBTN := widget.NewButton("Customer View", func() {
 		CustomerView()
 	})
-
 
 	go func() {
 		for range time.Tick(time.Second) {
@@ -106,7 +104,7 @@ func AddForm() *widget.Form {
 			{Text: "Flags", Widget: &flags},
 		},
 		OnSubmit: func() {
-			
+
 			scheduler.AddSchedule(dtEntry.Text, stEntry.Text, etEntry.Text, checker.CreateFlags(flags.Selected)...)
 			if dtEntry.Text == checker.GetDate() {
 				checker.SetTime()
@@ -114,3 +112,36 @@ func AddForm() *widget.Form {
 		},
 	}
 }
+
+func Remove() *fyne.Container {
+	selected := -1
+	lbl := canvas.NewText("", color.Black)
+	rl := DailyList()
+	removeBTN := widget.NewButton("Remove", func() {
+		if selected == -1 {
+			lbl.Text = "You need to select a schedule first!"
+			lbl.Refresh()
+			return
+		}
+		checker.Remove(selected)
+		selected = -1
+		rl.Refresh()
+	})
+	
+	rl.OnSelected = func(id widget.ListItemID) {
+		lbl.Text = "Remove " + checker.GetSchedules()[id].PrettyString() + " ?"
+		selected = id
+		lbl.Refresh()
+	}
+
+
+	return container.NewGridWithRows(
+		3,
+		rl,
+		lbl,
+		removeBTN,
+	)
+
+}
+
+

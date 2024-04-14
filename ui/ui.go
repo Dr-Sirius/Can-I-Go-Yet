@@ -35,10 +35,11 @@ func Run() {
 
 func DailyList() *widget.List {
 
-	data := checker.GetSchedules()
+	
 
 	return widget.NewList(
 		func() int {
+			data := checker.GetSchedules()
 			return len(data)
 		},
 		func() fyne.CanvasObject {
@@ -48,6 +49,7 @@ func DailyList() *widget.List {
 			return lbl
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
+			data := checker.GetSchedules()
 			o.(*canvas.Text).Text = data[i].PrettyString()
 		},
 	)
@@ -62,6 +64,7 @@ func DailyTab() *fyne.Container {
 	customerBTN := widget.NewButton("Customer View", func() {
 		CustomerView()
 	})
+
 
 	go func() {
 		for range time.Tick(time.Second) {
@@ -103,7 +106,11 @@ func AddForm() *widget.Form {
 			{Text: "Flags", Widget: &flags},
 		},
 		OnSubmit: func() {
+			
 			scheduler.AddSchedule(dtEntry.Text, stEntry.Text, etEntry.Text, checker.CreateFlags(flags.Selected)...)
+			if dtEntry.Text == checker.GetDate() {
+				checker.SetTime()
+			}
 		},
 	}
 }

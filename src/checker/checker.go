@@ -2,6 +2,7 @@ package checker
 
 import (
 	"can-i-go-yet/src/scheduler"
+	"fmt"
 	"image/color"
 	"log"
 	"time"
@@ -13,7 +14,7 @@ var stayOpen bool = false
 
 func SetTime() {
 	s := scheduler.LoadSchedules()
-	sch = scheduler.NewDayFromTime(time.Now(),s...).Schedules
+	sch = scheduler.NewDayFromTime(time.Now(), s...).Schedules
 	log.Println(sch)
 	for i, x := range sch {
 		if time.Now().Equal(x.StartTime) || (time.Now().After(x.StartTime) && time.Now().Before(x.EndTime)) {
@@ -22,7 +23,7 @@ func SetTime() {
 		}
 	}
 	currentSch = 0
-	
+
 }
 
 func CheckTime() (string, color.Color) {
@@ -45,8 +46,8 @@ func CheckTime() (string, color.Color) {
 
 		}
 
-	} 
-		
+	}
+
 	if stayOpen {
 		return setOpen()
 	} else {
@@ -55,7 +56,7 @@ func CheckTime() (string, color.Color) {
 
 }
 
-func CheckFlags() (string, color.Color){
+func CheckFlags() (string, color.Color) {
 	flags := sch[currentSch].Flags
 	if _, ok := flags[scheduler.BRKE]; ok {
 		if _, ok := flags[scheduler.UNDS]; ok {
@@ -84,8 +85,18 @@ func setOnBreak() (string, color.Color) {
 	return "Open", color.RGBA{255, 255, 0, 255}
 }
 
+func GetDate() string {
+	y, m, d := time.Now().Date()
+	mt := fmt.Sprint(int(m))
+	if int(m) < 10 {
+		mt = "0" + mt
+	}
 
-func GetSchedules() []scheduler.Schedule{
+	dt := fmt.Sprint(y) + "-" + mt + "-" + fmt.Sprint(d)
+	return dt
+}
+
+func GetSchedules() []scheduler.Schedule {
 	return sch
 }
 
@@ -94,13 +105,21 @@ func GetCurrentSchedule() scheduler.Schedule {
 }
 
 
-func CreateFlags(flags []string) []int{
+func CreateFlags(flags []string) []int {
 	f := []int{}
-	for _,x := range flags {
-		if x == "Open" {f = append(f, scheduler.OPEN)}
-		if x == "Break" {f = append(f, scheduler.BRKE)}
-		if x == "Understaffed" {f = append(f, scheduler.UNDS)}
-		if x == "Holiday" {f = append(f, scheduler.HDAY)}
+	for _, x := range flags {
+		if x == "Open" {
+			f = append(f, scheduler.OPEN)
+		}
+		if x == "Break" {
+			f = append(f, scheduler.BRKE)
+		}
+		if x == "Understaffed" {
+			f = append(f, scheduler.UNDS)
+		}
+		if x == "Holiday" {
+			f = append(f, scheduler.HDAY)
+		}
 	}
 	return f
 }

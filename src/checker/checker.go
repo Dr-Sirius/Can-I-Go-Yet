@@ -11,6 +11,7 @@ import (
 var sch []scheduler.Schedule
 var currentSch int
 var stayOpen bool = false
+var Announcments string = ""
 
 func SetTime() {
 	s := scheduler.LoadSchedules()
@@ -115,6 +116,15 @@ func GetStringSchedules() []string {
 		s = append(s, x.PrettyString())
 	}
 	return s
+}
+
+func GetReturnTime() string {
+	
+	if sch[currentSch].StartTime.After(time.Now()) {
+		log.Println(true)
+		return sch[currentSch].StringStartTime()
+	}
+	return sch[currentSch].StringEndTime()
 }
 
 func Remove(index int) {

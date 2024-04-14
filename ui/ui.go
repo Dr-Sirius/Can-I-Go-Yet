@@ -23,6 +23,7 @@ func Run() {
 
 	content := container.NewAppTabs(
 		container.NewTabItem("Today", DailyTab()),
+		container.NewTabItem("Announcments", Announcments()),
 		container.NewTabItem("Add Schedule", AddForm()),
 		container.NewTabItem("Remove Schedule", Remove()),
 	)
@@ -128,15 +129,13 @@ func Remove() *fyne.Container {
 		rl.UnselectAll()
 		rl.Refresh()
 	})
-	
+
 	rl.OnSelected = func(id widget.ListItemID) {
 		lbl.Text = "Remove " + checker.GetSchedules()[id].PrettyString() + " ?"
 		selected = id
-		
+
 		lbl.Refresh()
 	}
-	
-
 
 	return container.NewGridWithRows(
 		3,
@@ -147,4 +146,15 @@ func Remove() *fyne.Container {
 
 }
 
+func Announcments() *widget.Form {
+	anc := widget.NewMultiLineEntry()
 
+	return &widget.Form{
+		Items: []*widget.FormItem{ // we can specify items in the constructor
+			{Text: "Anouncments", Widget: anc},
+		},
+		OnSubmit: func() {
+			checker.Announcments = anc.Text
+		},
+	}
+}

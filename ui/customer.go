@@ -2,16 +2,16 @@ package ui
 
 import (
 	"can-i-go-yet/src/checker"
-	_ "fmt"
+
 	"image/color"
 	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
-	_ "fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/widget"
+
 	"fyne.io/fyne/v2/layout"
-	
 )
 
 func CustomerView() {
@@ -28,7 +28,20 @@ func CustomerView() {
 
 	officeHoursLBL := canvas.NewText("Tech Office Daily Hours: 7:40 am - 2:40 pm", color.Black)
 	officeHoursLBL.TextSize = 25
+	officeHoursLBL.TextStyle.Bold = true
 	officeHoursLBL.Alignment = fyne.TextAlignCenter
+
+	statusLBL := canvas.NewText("",color.Black)
+	statusLBL.TextSize = 25
+	statusLBL.Alignment = fyne.TextAlignCenter
+
+	announcmentsLBL := canvas.NewText("Announcments:",color.Black)
+	announcmentsLBL.TextSize = 25
+	announcmentsLBL.Alignment = fyne.TextAlignCenter
+
+	announcmentsBODY := widget.NewMultiLineEntry()
+	announcmentsBODY.Text = "Bacon"
+	announcmentsBODY.TextStyle.Bold = true
 
 	logo := canvas.NewImageFromResource(resourceLogoPng)
 
@@ -38,16 +51,24 @@ func CustomerView() {
 		container.New(
 			layout.NewVBoxLayout(),
 			openLBL,
+			canvas.NewLine(color.Black),
 			ctLBL,
 			officeHoursLBL,
+			canvas.NewLine(color.Black),
+			statusLBL,
+			announcmentsLBL,
+			announcmentsBODY,
 		),
 	)
+
 	myWindow.SetContent(content)
 	go func() {
 		updateClock(ctLBL)
 		for range time.Tick(time.Second) {
 			updateClock(ctLBL)
 			updateOpen(openLBL)
+			updateStatus(statusLBL,openLBL)
+			updateAnnouncments(announcmentsBODY)
 			content.Refresh()
 		}
 	}()
@@ -60,11 +81,21 @@ func updateClock(clock *canvas.Text) {
 	currentTime := time.Now().Format("Current Time: 03:04:05 pm")
 	clock.Text = currentTime
 	clock.Refresh()
-
 }
 
 func updateOpen(open *canvas.Text) {
-	status,colour := checker.CheckTime()
+	status, colour := checker.CheckTime()
 	open.Text = status
 	open.Color = colour
+}
+
+func updateStatus(status *canvas.Text, open *canvas.Text) {
+	if open.Text == "Closed" {
+		status.Text = "The Tech Office will reopen at " + checker.GetReturnTime()
+	}
+	status.Text = ""
+}
+
+func updateAnnouncments(anc *widget.Entry) {
+	anc.Text = checker.Announcments
 }

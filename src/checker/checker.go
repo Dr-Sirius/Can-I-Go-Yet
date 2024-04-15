@@ -136,14 +136,18 @@ func GetReturnTime() string {
 }
 
 func Remove(index int) {
-	if len(sch) == 1 {
-		fake := scheduler.NewScheduleFromTime(time.Time{},time.Time{},0)
-		sch[0] = fake
+	
+	if (len(sch) == 1 || len(sch) == 0) && sch[0].Equal(scheduler.Schedule{}) {
 		return
 	}
+
+
 	scheduler.RemoveSchedule(sch[index])
 	s := sch[0:index]
 	s = append(s, sch[index+1:]...)
+	if len(s) == 0 {
+		s = append(s, scheduler.Schedule{})
+	}
 	sch = s
 
 

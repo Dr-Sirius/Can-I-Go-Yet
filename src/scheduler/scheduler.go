@@ -307,11 +307,10 @@ func AddSchedule(date string, startTime string, endTime string, flags ...int) {
 
 	sch := "\n" + date + ", " + startTime + ", " + endTime + ", " + flagString
 
-	file, err := os.OpenFile("Schedules/Schedules.csv", os.O_APPEND, 0644)
+	file, err := os.OpenFile("Schedules/Schedules.csv", os.O_APPEND|os.O_WRONLY, 0644)
 
 	if err != nil {
 		log.Println(err)
-
 	}
 
 	defer file.Close()
@@ -320,13 +319,14 @@ func AddSchedule(date string, startTime string, endTime string, flags ...int) {
 
 	if err != nil {
 		log.Println(err)
+		
 
 	}
 }
 
 func RemoveSchedule(s Schedule) {
 	sch := LoadSchedules()
-
+	log.Println(s)
 	for i, x := range sch {
 		if x.Equal(s) {
 			sch = append(sch[0:i], sch[i+1:]...)

@@ -125,6 +125,7 @@ func Remove() *fyne.Container {
 			lbl.Refresh()
 			return
 		}
+
 		checker.Remove(selected)
 		selected = -1
 		rl.UnselectAll()

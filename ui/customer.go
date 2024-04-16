@@ -17,7 +17,6 @@ import (
 func CustomerView() {
 
 	myWindow := fyne.CurrentApp().NewWindow("Customer View")
-
 	openLBL := canvas.NewText("", color.RGBA{R: 255, G: 0, B: 0, A: 255})
 	openLBL.TextSize = 150
 	openLBL.Alignment = fyne.TextAlignCenter
@@ -46,7 +45,7 @@ func CustomerView() {
 	logo := canvas.NewImageFromResource(resourceLogoPng)
 
 	content := container.New(
-		layout.NewAdaptiveGridLayout(3),
+		layout.NewAdaptiveGridLayout(2),
 		logo,
 		container.New(
 			layout.NewVBoxLayout(),

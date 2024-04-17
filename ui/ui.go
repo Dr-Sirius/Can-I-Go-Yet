@@ -30,6 +30,7 @@ func Run() {
 		container.NewTabItem("Add Schedule", AddForm()),
 		container.NewTabItem("Remove Schedule", Remove()),
 		container.NewTabItem("Templates", TemplatTab()),
+		container.NewTabItem("Build Template", BuildTemplatTab()),
 	)
 
 	myWindow.SetContent(content)
@@ -40,7 +41,7 @@ func Run() {
 }
 
 func TodayList() *widget.List {
-
+	
 	return widget.NewList(
 		func() int {
 			data := checker.GetSchedules()
@@ -256,4 +257,8 @@ func TemplateForm() *widget.Form {
 
 		},
 	}
+}
+
+func BuildTemplatTab() *fyne.Container {
+	return container.NewWithoutLayout(TemplateForm())
 }

@@ -2,6 +2,7 @@ package checker
 
 import (
 	"can-i-go-yet/src/scheduler"
+	"can-i-go-yet/src/templater"
 	"fmt"
 	"image/color"
 	"log"
@@ -12,6 +13,8 @@ var sch []scheduler.Schedule
 var stayOpen bool = false
 var Announcments string = ""
 var Status string = "Break"
+var DefaultTemplate = "alpha"
+
 
 func SetTime() {
 	s := scheduler.LoadSchedules()
@@ -23,9 +26,7 @@ func SetTime() {
 		}
 	}
 	if len(sch) == 0 {
-		sch = []scheduler.Schedule{
-			{},
-		}
+		sch = TemplateToSchedule(DefaultTemplate,time.Now().Format("2006-01-02"))
 	}
 
 }
@@ -186,4 +187,14 @@ func CreateFlags(flags []string) []int {
 		}
 	}
 	return f
+}
+
+
+func TemplateToSchedule(name string,date string) []scheduler.Schedule {
+	s := []scheduler.Schedule{}
+
+	for _,x := range templater.LoadTemplate(name) {
+		s = append(s, scheduler.NewSchedule(x.Start_Time,x.End_Time,date,x.FlagsSlice()...))
+	}
+	return s
 }

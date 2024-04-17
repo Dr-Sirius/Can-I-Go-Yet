@@ -4,7 +4,6 @@ import (
 	"can-i-go-yet/src/checker"
 	"can-i-go-yet/src/scheduler"
 	"can-i-go-yet/src/templater"
-	"log"
 
 	"image/color"
 	"time"
@@ -137,7 +136,7 @@ func Remove() *fyne.Container {
 
 	rl.OnSelected = func(id widget.ListItemID) {
 		lbl.Text = "Remove " + checker.GetSchedules()[id].PrettyString() + " ?"
-		selected = id
+		selected = id 
 
 		lbl.Refresh()
 	}
@@ -169,18 +168,22 @@ func TemplatTab() *fyne.Container {
 	todayLBL.TextSize = 35
 	tabs := container.NewDocTabs(TemplateTabs()...)
 	dateENT := widget.NewEntry()
+	dateENT.SetText(time.Now().Format("2006-01-02"))
+
+	name := tabs.Items[0].Text
+
+	tabs.OnSelected = func(ti *container.TabItem) {
+		name = ti.Text
+	}
 
 	addBTN := widget.NewButton("Add Template", func() {
-		name := ""
-		tabs.OnSelected = func(ti *container.TabItem) {
-			log.Println(ti.Text)
-			name = ti.Text
-		}
-		
+
 		for _, x := range templater.LoadTemplate(name) {
 
 			scheduler.AddSchedule(dateENT.Text, x.Start_Time, x.End_Time, x.FlagsSlice()...)
 		}
+		checker.SetTime()
+
 	})
 
 	return container.NewGridWithRows(
@@ -203,6 +206,7 @@ func TemplateTabs() []*container.TabItem {
 			i,
 			TemplateList(x),
 		)
+
 		tabs = append(tabs, c)
 	}
 	return tabs

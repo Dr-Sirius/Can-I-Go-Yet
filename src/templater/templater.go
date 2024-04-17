@@ -44,7 +44,7 @@ func AddTemplate(t []Template) {
 	os.WriteFile("Templates/t_"+t[0].Name+".csv", []byte("Name, Start_Time, End_Time, Flags"), os.ModePerm)
 	for _, x := range t {
 		flagString := ""
-		for _, f := range x.Flags {
+		for _, f := range x.FlagsSlice(){
 			flagString += fmt.Sprint(f) + "|"
 		}
 

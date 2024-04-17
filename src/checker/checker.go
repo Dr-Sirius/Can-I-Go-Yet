@@ -9,7 +9,6 @@ import (
 )
 
 var sch []scheduler.Schedule
-var currentSch int
 var stayOpen bool = false
 var Announcments string = ""
 var Status string = "Break"
@@ -18,13 +17,11 @@ func SetTime() {
 	s := scheduler.LoadSchedules()
 	sch = scheduler.NewDayFromTime(time.Now(), s...).Schedules
 	log.Println(sch)
-	for i, x := range sch {
+	for _, x := range sch {
 		if time.Now().Equal(x.StartTime) || (time.Now().After(x.StartTime) && time.Now().Before(x.EndTime)) {
-			currentSch = i
 			return
 		}
 	}
-	currentSch = 0
 	if len(sch) == 0 {
 		sch = []scheduler.Schedule{
 			{},
@@ -38,21 +35,18 @@ func CheckTime() (string, color.Color) {
 		log.Println("SCH = 0")
 		return setOpen()
 
-	} else if time.Now().Equal(sch[currentSch].StartTime) || (time.Now().After(sch[currentSch].StartTime) && time.Now().Before(sch[currentSch].EndTime)) {
+	} else if time.Now().Equal(GetCurrentSchedule().StartTime) || (time.Now().After(GetCurrentSchedule().StartTime) && time.Now().Before(GetCurrentSchedule().EndTime)) {
 		log.Println("Starttime")
 		return CheckFlags()
 
-	} else if time.Now().Equal(sch[currentSch].EndTime) || time.Now().After(sch[currentSch].EndTime) {
+	} else if time.Now().Equal(GetCurrentSchedule().EndTime) || time.Now().After(GetCurrentSchedule().EndTime) {
 		log.Println("Endtime")
-		if (currentSch + 1) != len(sch) {
+		
+		
+		Status = "Closed"
+		return setClosed()
 
-			currentSch += 1
-			CheckTime()
-		} else {
-			Status = "Closed"
-			return setClosed()
-
-		}
+		
 
 	}
 
@@ -67,7 +61,7 @@ func CheckTime() (string, color.Color) {
 }
 
 func CheckFlags() (string, color.Color) {
-	flags := sch[currentSch].Flags
+	flags := GetCurrentSchedule().Flags
 	if _, ok := flags[scheduler.BRKE]; ok {
 		if _, ok := flags[scheduler.UNDS]; ok {
 			Status = "Closed"
@@ -115,7 +109,20 @@ func GetSchedules() []scheduler.Schedule {
 }
 
 func GetCurrentSchedule() scheduler.Schedule {
-	return sch[currentSch]
+	if checkSchedule() == -1 {
+		return scheduler.Schedule{}
+	}
+	return sch[checkSchedule()]
+}
+
+func checkSchedule() int {
+	for i, x := range sch {
+		if time.Now().Equal(x.StartTime) || (time.Now().After(x.StartTime) && time.Now().Before(x.EndTime)) {
+			
+			return i
+		}
+	}
+	return -1
 }
 
 func GetStringSchedules() []string {
@@ -128,11 +135,11 @@ func GetStringSchedules() []string {
 
 func GetReturnTime() string {
 	
-	if sch[currentSch].StartTime.After(time.Now()) {
+	if GetCurrentSchedule().StartTime.After(time.Now()) {
 		log.Println(true)
-		return sch[currentSch].StringStartTime()
+		return GetCurrentSchedule().StringStartTime()
 	}
-	return sch[currentSch].StringEndTime()
+	return GetCurrentSchedule().StringEndTime()
 }
 
 func Remove(index int) {
@@ -144,7 +151,10 @@ func Remove(index int) {
 
 	scheduler.RemoveSchedule(sch[index])
 	s := sch[0:index]
-	s = append(s, sch[index+1:]...)
+	if len(sch)-1 > index {
+		s = append(s, sch[index+1:]...)
+	}
+	
 	if len(s) == 0 {
 		s = append(s, scheduler.Schedule{})
 	}

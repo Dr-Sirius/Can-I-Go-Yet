@@ -213,10 +213,10 @@ func TemplateTabs() []*container.TabItem {
 	return tabs
 }
 
-func TemplateList(t []templater.Template) *widget.List {
+func TemplateList(t *[]templater.Template) *widget.List {
 	return widget.NewList(
 		func() int {
-			return len(t)
+			return len((*t))
 		},
 		func() fyne.CanvasObject {
 
@@ -225,12 +225,12 @@ func TemplateList(t []templater.Template) *widget.List {
 			return lbl
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
-			o.(*canvas.Text).Text = t[i].PrettyString()
+			o.(*canvas.Text).Text = (*t)[i].PrettyString()
 		},
 	)
 }
 
-func TemplateForm() *widget.Form {
+func TemplateForm(list *widget.List) *widget.Form {
 	tName := widget.NewEntry()
 	tName.SetPlaceHolder("Alpha")
 	stEntry := widget.NewEntry()
@@ -246,6 +246,9 @@ func TemplateForm() *widget.Form {
 			"Holiday",
 		},
 	}
+
+	t := []templater.Template{}
+
 	return &widget.Form{
 		Items: []*widget.FormItem{ // we can specify items in the constructor
 			{Text: "Template Name", Widget: tName},
@@ -254,11 +257,16 @@ func TemplateForm() *widget.Form {
 			{Text: "Flags", Widget: &flags},
 		},
 		OnSubmit: func() {
-
+			t = append(t, templater.NewTemplate(tName.Text,stEntry.Text,etEntry.Text,checker.CreateFlags(flags.Selected)...))
 		},
 	}
 }
 
 func BuildTemplatTab() *fyne.Container {
-	return container.NewWithoutLayout(TemplateForm())
+	t := []scheduler.Schedule{}
+	list := TemplateList(t)
+	return container.NewHBox(
+		list,
+		TemplateForm(list),
+	)
 }

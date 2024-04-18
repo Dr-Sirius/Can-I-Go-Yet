@@ -68,6 +68,33 @@ func AddTemplate(t []Template) {
 
 }
 
+func AddTemplateWithName(t []Template,name string) {
+	os.WriteFile("Templates/t_"+name+".csv", []byte("Name, Start_Time, End_Time, Flags"), os.ModePerm)
+	for _, x := range t {
+		flagString := ""
+		for _, f := range x.FlagsSlice(){
+			flagString += fmt.Sprint(f) + "|"
+		}
+
+		sch := "\n" + x.Name + ", " + x.Start_Time + ", " + x.End_Time + ", " + flagString
+
+		file, err := os.OpenFile("Templates/t_"+name+".csv", os.O_APPEND|os.O_WRONLY, 0644)
+
+		if err != nil {
+			log.Println(err)
+		}
+
+		defer file.Close()
+
+		_, err = file.WriteString(sch)
+
+		if err != nil {
+			log.Println(err)
+
+		}
+	}
+}
+
 func LoadTemplate(name string) []Template {
 	if err := CreateTemplate(name); err != nil {
 		log.Println(err)
@@ -104,6 +131,10 @@ func LoadTemplate(name string) []Template {
 		t = append(t, ns)
 	}
 	return t
+}
+
+func RemoveTemplate(name string) error{
+	return os.Remove("Templates/t_" + name + ".csv")
 }
 
 func GetAllTemplates() map[string][]Template {
@@ -154,3 +185,4 @@ func (s Template) FlagsSlice() []int {
 	slices.Sort(x)
 	return x
 }
+

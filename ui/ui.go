@@ -4,6 +4,7 @@ import (
 	"can-i-go-yet/src/checker"
 	"can-i-go-yet/src/scheduler"
 	"can-i-go-yet/src/templater"
+	"log"
 
 	"image/color"
 	"time"
@@ -41,7 +42,7 @@ func Run() {
 }
 
 func TodayList() *widget.List {
-	
+
 	return widget.NewList(
 		func() int {
 			data := checker.GetSchedules()
@@ -137,7 +138,7 @@ func Remove() *fyne.Container {
 
 	rl.OnSelected = func(id widget.ListItemID) {
 		lbl.Text = "Remove " + checker.GetSchedules()[id].PrettyString() + " ?"
-		selected = id 
+		selected = id
 
 		lbl.Refresh()
 	}
@@ -213,10 +214,10 @@ func TemplateTabs() []*container.TabItem {
 	return tabs
 }
 
-func TemplateList(t *[]templater.Template) *widget.List {
+func TemplateList(t []templater.Template) *widget.List {
 	return widget.NewList(
 		func() int {
-			return len((*t))
+			return len(t)
 		},
 		func() fyne.CanvasObject {
 
@@ -225,7 +226,7 @@ func TemplateList(t *[]templater.Template) *widget.List {
 			return lbl
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
-			o.(*canvas.Text).Text = (*t)[i].PrettyString()
+			o.(*canvas.Text).Text = t[i].PrettyString()
 		},
 	)
 }
@@ -257,16 +258,45 @@ func TemplateForm(list *widget.List) *widget.Form {
 			{Text: "Flags", Widget: &flags},
 		},
 		OnSubmit: func() {
-			t = append(t, templater.NewTemplate(tName.Text,stEntry.Text,etEntry.Text,checker.CreateFlags(flags.Selected)...))
+			t = append(t, templater.NewTemplate(tName.Text, stEntry.Text, etEntry.Text, checker.CreateFlags(flags.Selected)...))
+			templater.AddTemplateWithName(t, "__temp__")
+			list.Refresh()
 		},
 	}
 }
 
+func BuildTemplateList() *widget.List {
+	return widget.NewList(
+		func() int {
+			return len(templater.LoadTemplate("__temp__"))
+		},
+		func() fyne.CanvasObject {
+
+			lbl := canvas.NewText("template", color.Black)
+			lbl.TextSize = 15
+			return lbl
+		},
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+			o.(*canvas.Text).Text = templater.LoadTemplate("__temp__")[0].PrettyString()
+		},
+	)
+}
+
 func BuildTemplatTab() *fyne.Container {
-	t := []scheduler.Schedule{}
-	list := TemplateList(t)
-	return container.NewHBox(
-		list,
-		TemplateForm(list),
+	templater.AddTemplateWithName([]templater.Template{}, "__temp__")
+	b := BuildTemplateList()
+	return container.NewGridWithColumns(
+		2,
+		b,
+		container.NewVBox(
+			TemplateForm(b),
+			widget.NewButton("Save", func() {
+				t := templater.LoadTemplate("__temp__")
+				templater.AddTemplate(t)
+				if err := templater.RemoveTemplate("__temp__"); err != nil {
+					log.Println(err)
+				}
+			}),
+		),
 	)
 }

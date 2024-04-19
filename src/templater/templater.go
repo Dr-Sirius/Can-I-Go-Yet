@@ -19,6 +19,7 @@ type Template struct {
 	Flags      map[int]bool
 }
 
+
 func NewTemplate(name string, startTime string, endTime string, flags ...int) Template {
 	f := make(map[int]bool)
 	for _, x := range flags {
@@ -26,6 +27,8 @@ func NewTemplate(name string, startTime string, endTime string, flags ...int) Te
 	}
 	return Template{Name: name, Start_Time: startTime, End_Time: endTime, Flags: f}
 }
+
+
 
 func CreateTemplate(Name string) error {
 	if _, err := os.Stat("Templates"); errors.Is(err, os.ErrNotExist) {

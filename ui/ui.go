@@ -232,7 +232,7 @@ func TemplateList(t []templater.Template) *widget.List {
 	)
 }
 
-func TemplateForm(list *widget.List) *widget.Form {
+func TemplateForm(list *widget.List,b *binding.UntypedList) *widget.Form {
 	tName := widget.NewEntry()
 	tName.SetPlaceHolder("Alpha")
 	stEntry := widget.NewEntry()
@@ -256,7 +256,6 @@ func TemplateForm(list *widget.List) *widget.Form {
 		},
 	}
 
-	t := []templater.Template{}
 	
 	return &widget.Form{
 		Items: []*widget.FormItem{ // we can specify items in the constructor
@@ -267,9 +266,8 @@ func TemplateForm(list *widget.List) *widget.Form {
 			{Widget: saveBTN},
 		},
 		OnSubmit: func() {
-			t = append(t, templater.NewTemplate(tName.Text, stEntry.Text, etEntry.Text, checker.CreateFlags(flags.Selected)...))
+			(*b).Append(templater.NewTemplate(tName.Text, stEntry.Text, etEntry.Text, checker.CreateFlags(flags.Selected)...))
 			
-			templater.AddTemplateWithName(t, "__temp__")
 			stEntry.Text = ""
 			etEntry.Text = ""
 			stEntry.Refresh()
@@ -279,28 +277,34 @@ func TemplateForm(list *widget.List) *widget.Form {
 	}
 }
 
-func BuildTemplateList(data *binding.UntypedList) *widget.List {
+func BuildTemplateList(data binding.UntypedList) *widget.List {
 	return widget.NewListWithData(
-		(*data),
+		data,
 		func() fyne.CanvasObject {
-
-			lbl := canvas.NewText("template", color.Black)
-			lbl.TextSize = 15
+			lbl := canvas.NewText("template",color.Black)
+			lbl.TextSize = 15	
 			return lbl
 		},
 		func(di binding.DataItem, o fyne.CanvasObject) {
-			o.(*widget.Label).Bind(di.(binding.String))
+			s,_ := di.(binding.Untyped).Get()
+			t := s.(templater.Template)
+			o.(*canvas.Text).Text = (t.PrettyString())
 		},
 	)
 }
 
 func BuildTemplatTab() *container.Split {
 	
-	
+	b := binding.NewUntypedList()
+	for _,x := range templater.LoadTemplate("alpha") {
+		b.Append(x)
+	}
+
+	ls := BuildTemplateList(b)
 
 	content := container.NewVSplit(
-		b,	
-		TemplateForm(b),
+		ls,	
+		TemplateForm(ls,&b),
 	)
 	
 	return content

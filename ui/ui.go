@@ -4,7 +4,7 @@ import (
 	"can-i-go-yet/src/checker"
 	"can-i-go-yet/src/scheduler"
 	"can-i-go-yet/src/templater"
-	"log"
+	"can-i-go-yet/src/converter"
 
 	"image/color"
 	"time"
@@ -178,7 +178,7 @@ func TemplatTab() *fyne.Container {
 	tabs.OnSelected = func(ti *container.TabItem) {
 		name = ti.Text
 	}
-
+	
 	addBTN := widget.NewButton("Add Template", func() {
 
 		for _, x := range templater.LoadTemplate(name) {
@@ -188,6 +188,12 @@ func TemplatTab() *fyne.Container {
 		checker.SetTime()
 
 	})
+	
+	go func() {
+		for range time.Tick(time.Second) {
+			tabs.SetItems(TemplateTabs())
+		}
+	}()
 
 	return container.NewGridWithRows(
 		3,
@@ -202,8 +208,11 @@ func TemplatTab() *fyne.Container {
 
 }
 
+
+
 func TemplateTabs() []*container.TabItem {
 	var tabs []*container.TabItem
+	
 	for i, x := range templater.GetAllTemplates() {
 		c := container.NewTabItem(
 			i,
@@ -240,11 +249,12 @@ func TemplateForm(list *widget.List,b *binding.UntypedList) *widget.Form {
 	etEntry := widget.NewEntry()
 	etEntry.SetPlaceHolder("12:00 pm")
 	saveBTN := widget.NewButton("Save",func() {
-		t := templater.LoadTemplate("__temp__")
-		templater.AddTemplate(t)
-		if err := templater.RemoveTemplate("__temp__"); err != nil {
-			log.Println(err)
+		t := []templater.Template{}
+		for i := range (*b).Length() {
+			item,_ := (*b).GetItem(i)
+			t = append(t, converter.DataItemToTemplate(item))
 		}
+		templater.AddTemplate(t)
 	})
 	flags := widget.CheckGroup{
 		Horizontal: true,
@@ -286,9 +296,8 @@ func BuildTemplateList(data binding.UntypedList) *widget.List {
 			return lbl
 		},
 		func(di binding.DataItem, o fyne.CanvasObject) {
-			s,_ := di.(binding.Untyped).Get()
-			t := s.(templater.Template)
-			o.(*canvas.Text).Text = (t.PrettyString())
+			
+			o.(*canvas.Text).Text = converter.DataItemToTemplate(di).PrettyString()
 		},
 	)
 }
@@ -296,9 +305,6 @@ func BuildTemplateList(data binding.UntypedList) *widget.List {
 func BuildTemplatTab() *container.Split {
 	
 	b := binding.NewUntypedList()
-	for _,x := range templater.LoadTemplate("alpha") {
-		b.Append(x)
-	}
 
 	ls := BuildTemplateList(b)
 

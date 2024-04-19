@@ -198,3 +198,4 @@ func TemplateToSchedule(name string,date string) []scheduler.Schedule {
 	}
 	return s
 }
+

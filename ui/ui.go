@@ -14,6 +14,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/theme"
 	_ "fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -22,9 +23,9 @@ import (
 func Run() {
 	app := app.New()
 	app.Settings().SetTheme(theme.LightTheme())
-
+	
 	myWindow := app.NewWindow("Can I Go Yet?")
-
+	
 	content := container.NewAppTabs(
 		container.NewTabItem("Today", TodayTab()),
 		container.NewTabItem("Announcments", Announcments()),
@@ -238,6 +239,13 @@ func TemplateForm(list *widget.List) *widget.Form {
 	stEntry.SetPlaceHolder("12:00 am")
 	etEntry := widget.NewEntry()
 	etEntry.SetPlaceHolder("12:00 pm")
+	saveBTN := widget.NewButton("Save",func() {
+		t := templater.LoadTemplate("__temp__")
+		templater.AddTemplate(t)
+		if err := templater.RemoveTemplate("__temp__"); err != nil {
+			log.Println(err)
+		}
+	})
 	flags := widget.CheckGroup{
 		Horizontal: true,
 		Options: []string{
@@ -249,54 +257,51 @@ func TemplateForm(list *widget.List) *widget.Form {
 	}
 
 	t := []templater.Template{}
-
+	
 	return &widget.Form{
 		Items: []*widget.FormItem{ // we can specify items in the constructor
 			{Text: "Template Name", Widget: tName},
 			{Text: "Start Time", Widget: stEntry},
 			{Text: "End Time", Widget: etEntry},
 			{Text: "Flags", Widget: &flags},
+			{Widget: saveBTN},
 		},
 		OnSubmit: func() {
 			t = append(t, templater.NewTemplate(tName.Text, stEntry.Text, etEntry.Text, checker.CreateFlags(flags.Selected)...))
+			
 			templater.AddTemplateWithName(t, "__temp__")
+			stEntry.Text = ""
+			etEntry.Text = ""
+			stEntry.Refresh()
+			etEntry.Refresh()
 			list.Refresh()
 		},
 	}
 }
 
-func BuildTemplateList() *widget.List {
-	return widget.NewList(
-		func() int {
-			return len(templater.LoadTemplate("__temp__"))
-		},
+func BuildTemplateList(data *binding.UntypedList) *widget.List {
+	return widget.NewListWithData(
+		(*data),
 		func() fyne.CanvasObject {
 
 			lbl := canvas.NewText("template", color.Black)
 			lbl.TextSize = 15
 			return lbl
 		},
-		func(i widget.ListItemID, o fyne.CanvasObject) {
-			o.(*canvas.Text).Text = templater.LoadTemplate("__temp__")[0].PrettyString()
+		func(di binding.DataItem, o fyne.CanvasObject) {
+			o.(*widget.Label).Bind(di.(binding.String))
 		},
 	)
 }
 
-func BuildTemplatTab() *fyne.Container {
-	templater.AddTemplateWithName([]templater.Template{}, "__temp__")
-	b := BuildTemplateList()
-	return container.NewGridWithColumns(
-		2,
-		b,
-		container.NewVBox(
-			TemplateForm(b),
-			widget.NewButton("Save", func() {
-				t := templater.LoadTemplate("__temp__")
-				templater.AddTemplate(t)
-				if err := templater.RemoveTemplate("__temp__"); err != nil {
-					log.Println(err)
-				}
-			}),
-		),
+func BuildTemplatTab() *container.Split {
+	
+	
+
+	content := container.NewVSplit(
+		b,	
+		TemplateForm(b),
 	)
+	
+	return content
 }

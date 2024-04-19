@@ -32,7 +32,6 @@ func CreateTemplate(Name string) error {
 		if err := os.Mkdir("Templates", os.ModePerm); err != nil {
 			return err
 		} else {
-			//os.Create("Templates/t_" + Name + ".csv")
 			os.WriteFile("Templates/t_"+Name+".csv", []byte("Name, Start_Time, End_Time, Flags"), os.ModePerm)
 			return nil
 		}
@@ -44,7 +43,7 @@ func AddTemplate(t []Template) {
 	os.WriteFile("Templates/t_"+t[0].Name+".csv", []byte("Name, Start_Time, End_Time, Flags"), os.ModePerm)
 	for _, x := range t {
 		flagString := ""
-		for _, f := range x.FlagsSlice(){
+		for _, f := range x.FlagsSlice() {
 			flagString += fmt.Sprint(f) + "|"
 		}
 
@@ -68,11 +67,11 @@ func AddTemplate(t []Template) {
 
 }
 
-func AddTemplateWithName(t []Template,name string) {
+func AddTemplateWithName(t []Template, name string) {
 	os.WriteFile("Templates/t_"+name+".csv", []byte("Name, Start_Time, End_Time, Flags"), os.ModePerm)
 	for _, x := range t {
 		flagString := ""
-		for _, f := range x.FlagsSlice(){
+		for _, f := range x.FlagsSlice() {
 			flagString += fmt.Sprint(f) + "|"
 		}
 
@@ -133,7 +132,7 @@ func LoadTemplate(name string) []Template {
 	return t
 }
 
-func RemoveTemplate(name string) error{
+func RemoveTemplate(name string) error {
 	return os.Remove("Templates/t_" + name + ".csv")
 }
 
@@ -186,3 +185,8 @@ func (s Template) FlagsSlice() []int {
 	return x
 }
 
+func Exists(name string) bool {
+	_,ok := GetAllTemplates()[name]
+
+	return ok
+}

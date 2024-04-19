@@ -221,7 +221,8 @@ func TemplateTabs() []*container.TabItem {
 
 		tabs = append(tabs, c)
 	}
-	return tabs
+	
+	return checker.SortTabs(tabs)
 }
 
 func TemplateList(t []templater.Template) *widget.List {

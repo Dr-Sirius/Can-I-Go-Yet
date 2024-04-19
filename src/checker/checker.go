@@ -7,6 +7,8 @@ import (
 	"image/color"
 	"log"
 	"time"
+
+	"fyne.io/fyne/v2/container"
 )
 
 var sch []scheduler.Schedule
@@ -199,3 +201,18 @@ func TemplateToSchedule(name string,date string) []scheduler.Schedule {
 	return s
 }
 
+func SortTabs(tabs []*container.TabItem) []*container.TabItem {
+	for i := len(tabs) - 1; i >= 0; i -= 1 {
+
+		for x := range i {
+
+			if tabs[x].Text > tabs[x+1].Text  {
+				temp := tabs[x]
+				tabs[x] = tabs[x+1]
+				tabs[x+1] = temp
+			}
+
+		}
+	}
+	return tabs
+}

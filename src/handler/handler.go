@@ -1,11 +1,12 @@
-package checker
+package handler
 
 import (
+	"can-i-go-yet/src/converter"
 	"can-i-go-yet/src/scheduler"
-	"can-i-go-yet/src/templater"
 	"fmt"
 	"image/color"
 	"log"
+	"os"
 	"time"
 
 	"fyne.io/fyne/v2/container"
@@ -15,8 +16,7 @@ var sch []scheduler.Schedule
 var stayOpen bool = false
 var Announcments string = ""
 var Status string = "Break"
-var DefaultTemplate = "alpha"
-
+var DefaultTemplate = ""
 
 func SetTime() {
 	s := scheduler.LoadSchedules()
@@ -27,8 +27,8 @@ func SetTime() {
 			return
 		}
 	}
-	if len(sch) == 0 {
-		sch = TemplateToSchedule(DefaultTemplate,time.Now().Format("2006-01-02"))
+	if len(sch) == 0 && DefaultTemplate != ""{
+		sch = converter.TemplateToSchedule(DefaultTemplate, time.Now().Format("2006-01-02"))
 	}
 
 }
@@ -44,12 +44,9 @@ func CheckTime() (string, color.Color) {
 
 	} else if time.Now().Equal(GetCurrentSchedule().EndTime) || time.Now().After(GetCurrentSchedule().EndTime) {
 		log.Println("Endtime")
-		
-		
+
 		Status = "Closed"
 		return setClosed()
-
-		
 
 	}
 
@@ -121,7 +118,7 @@ func GetCurrentSchedule() scheduler.Schedule {
 func checkSchedule() int {
 	for i, x := range sch {
 		if time.Now().Equal(x.StartTime) || (time.Now().After(x.StartTime) && time.Now().Before(x.EndTime)) {
-			
+
 			return i
 		}
 	}
@@ -137,7 +134,7 @@ func GetStringSchedules() []string {
 }
 
 func GetReturnTime() string {
-	
+
 	if GetCurrentSchedule().StartTime.After(time.Now()) {
 		log.Println(true)
 		return GetCurrentSchedule().StringStartTime()
@@ -146,24 +143,26 @@ func GetReturnTime() string {
 }
 
 func Remove(index int) {
-	
+
 	if (len(sch) == 1 || len(sch) == 0) && sch[0].Equal(scheduler.Schedule{}) {
 		return
 	}
-
 
 	scheduler.RemoveSchedule(sch[index])
 	s := sch[0:index]
 	if len(sch)-1 > index {
 		s = append(s, sch[index+1:]...)
 	}
-	
+
 	if len(s) == 0 {
 		s = append(s, scheduler.Schedule{})
 	}
 	sch = s
 
+}
 
+func RemoveAll() {
+	os.WriteFile("Schedules/Schedules.csv", []byte("Date, Start_Time, End_Time, Flags"), os.ModePerm)
 }
 
 func remove(s []scheduler.Schedule, index int) []scheduler.Schedule {
@@ -191,22 +190,12 @@ func CreateFlags(flags []string) []int {
 	return f
 }
 
-
-func TemplateToSchedule(name string,date string) []scheduler.Schedule {
-	s := []scheduler.Schedule{}
-
-	for _,x := range templater.LoadTemplate(name) {
-		s = append(s, scheduler.NewSchedule(x.Start_Time,x.End_Time,date,x.FlagsSlice()...))
-	}
-	return s
-}
-
 func SortTabs(tabs []*container.TabItem) []*container.TabItem {
 	for i := len(tabs) - 1; i >= 0; i -= 1 {
 
 		for x := range i {
 
-			if tabs[x].Text > tabs[x+1].Text  {
+			if tabs[x].Text > tabs[x+1].Text {
 				temp := tabs[x]
 				tabs[x] = tabs[x+1]
 				tabs[x+1] = temp

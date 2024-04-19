@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"can-i-go-yet/src/checker"
+	"can-i-go-yet/src/handler"
 
 	"image/color"
 	"time"
@@ -83,17 +83,17 @@ func updateClock(clock *canvas.Text) {
 }
 
 func updateOpen(open *canvas.Text) {
-	status, colour := checker.CheckTime()
+	status, colour := handler.CheckTime()
 	open.Text = status
 	open.Color = colour
 }
 
 func updateStatus(status *canvas.Text, open *canvas.Text) {
-	if checker.Status == "Closed" {
-		status.Text = "The Tech Office will reopen at " + checker.GetReturnTime()
+	if handler.Status == "Closed" {
+		status.Text = "The Tech Office will reopen at " + handler.GetReturnTime()
 		return
 	}
-	if checker.Status == "Break" {
+	if handler.Status == "Break" {
 		status.Text = "There may be increased wait times"
 		return
 	}
@@ -101,5 +101,5 @@ func updateStatus(status *canvas.Text, open *canvas.Text) {
 }
 
 func updateAnnouncments(anc *widget.Entry) {
-	anc.Text = checker.Announcments
+	anc.Text = handler.Announcments
 }

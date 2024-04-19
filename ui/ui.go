@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"can-i-go-yet/src/checker"
+	"can-i-go-yet/src/handler"
 	"can-i-go-yet/src/scheduler"
 	"can-i-go-yet/src/templater"
 	"can-i-go-yet/src/converter"
@@ -26,11 +26,17 @@ func Run() {
 	
 	myWindow := app.NewWindow("Can I Go Yet?")
 	
+	
+	b := binding.NewUntypedList()
+	for _,x := range scheduler.LoadSchedules(){
+		b.Append(x)
+	}
+
 	content := container.NewAppTabs(
-		container.NewTabItem("Today", TodayTab()),
+		container.NewTabItem("Today", TodayTab(b)),
 		container.NewTabItem("Announcments", Announcments()),
-		container.NewTabItem("Add Schedule", AddForm()),
-		container.NewTabItem("Remove Schedule", Remove()),
+		container.NewTabItem("Add Schedule", AddForm(b)),
+		container.NewTabItem("Remove Schedule", Remove(b)),
 		container.NewTabItem("Templates", TemplatTab()),
 		container.NewTabItem("Build Template", BuildTemplatTab()),
 	)
@@ -42,31 +48,27 @@ func Run() {
 
 }
 
-func TodayList() *widget.List {
+func TodayList(data binding.UntypedList) *widget.List {
 
-	return widget.NewList(
-		func() int {
-			data := checker.GetSchedules()
-			return len(data)
-		},
+	return widget.NewListWithData(
+		data,
 		func() fyne.CanvasObject {
-
+			
 			lbl := canvas.NewText("template", color.Black)
 			lbl.TextSize = 15
 			return lbl
 		},
-		func(i widget.ListItemID, o fyne.CanvasObject) {
-			data := checker.GetSchedules()
-			o.(*canvas.Text).Text = data[i].PrettyString()
+		func(di binding.DataItem, o fyne.CanvasObject) {
+			o.(*canvas.Text).Text = converter.DataItemToSchedule(di).PrettyString()
 		},
 	)
 }
 
-func TodayTab() *fyne.Container {
+func TodayTab(data binding.UntypedList) *fyne.Container {
 	todayLBL := canvas.NewText("Today's Schedule", color.Black)
 	todayLBL.TextSize = 35
 
-	currentLBL := canvas.NewText("Current Schedule: "+checker.GetCurrentSchedule().PrettyString(), color.Black)
+	currentLBL := canvas.NewText("Current Schedule: "+handler.GetCurrentSchedule().PrettyString(), color.Black)
 
 	customerBTN := widget.NewButton("Customer View", func() {
 		CustomerView()
@@ -74,20 +76,20 @@ func TodayTab() *fyne.Container {
 
 	go func() {
 		for range time.Tick(time.Second) {
-			currentLBL.Text = "Current Schedule: " + checker.GetCurrentSchedule().PrettyString()
+			currentLBL.Text = "Current Schedule: " + handler.GetCurrentSchedule().PrettyString()
 		}
 	}()
 	return container.NewGridWithRows(
 		4,
 		todayLBL,
-		TodayList(),
+		TodayList(data),
 		currentLBL,
 		customerBTN,
 	)
 
 }
 
-func AddForm() *widget.Form {
+func AddForm(data binding.UntypedList) *widget.Form {
 	dtEntry := widget.NewEntry()
 	dtEntry.SetPlaceHolder("2024-01-01")
 	stEntry := widget.NewEntry()
@@ -111,19 +113,20 @@ func AddForm() *widget.Form {
 			{Text: "Flags", Widget: &flags},
 		},
 		OnSubmit: func() {
-
-			scheduler.AddSchedule(dtEntry.Text, stEntry.Text, etEntry.Text, checker.CreateFlags(flags.Selected)...)
-			if dtEntry.Text == checker.GetDate() {
-				checker.SetTime()
-			}
+			s := scheduler.NewSchedule(stEntry.Text, etEntry.Text, dtEntry.Text,handler.CreateFlags(flags.Selected)...)
+			scheduler.AddSchedule(dtEntry.Text, stEntry.Text, etEntry.Text, handler.CreateFlags(flags.Selected)...)
+			data.Append(s)
+			// if dtEntry.Text == handler.GetDate() {
+			// 	handler.SetTime()
+			// }
 		},
 	}
 }
 
-func Remove() *fyne.Container {
+func Remove(data binding.UntypedList) *fyne.Container {
 	selected := -1
 	lbl := canvas.NewText("", color.Black)
-	rl := TodayList()
+	rl := TodayList(data)
 	removeBTN := widget.NewButton("Remove", func() {
 		if selected == -1 {
 			lbl.Text = "You need to select a schedule first!"
@@ -131,14 +134,24 @@ func Remove() *fyne.Container {
 			return
 		}
 
-		checker.Remove(selected)
+		handler.Remove(selected)
+		s,_ := data.Get()
+		temp := s[selected+1:]
+		s = append(s[:selected], temp...)
+		data.Set(s)
 		selected = -1
 		rl.UnselectAll()
 		rl.Refresh()
 	})
 
+	removeAllBTN := widget.NewButton("Remove All", func() {
+		handler.RemoveAll()
+		rl.UnselectAll()
+		rl.Refresh()
+	})
+
 	rl.OnSelected = func(id widget.ListItemID) {
-		lbl.Text = "Remove " + checker.GetSchedules()[id].PrettyString() + " ?"
+		lbl.Text = "Remove " + handler.GetSchedules()[id].PrettyString() + " ?"
 		selected = id
 
 		lbl.Refresh()
@@ -148,7 +161,10 @@ func Remove() *fyne.Container {
 		3,
 		rl,
 		lbl,
-		removeBTN,
+		container.NewHBox(
+			removeBTN,
+			removeAllBTN,
+		),
 	)
 
 }
@@ -161,7 +177,7 @@ func Announcments() *widget.Form {
 			{Text: "Anouncments", Widget: anc},
 		},
 		OnSubmit: func() {
-			checker.Announcments = anc.Text
+			handler.Announcments = anc.Text
 		},
 	}
 }
@@ -178,6 +194,11 @@ func TemplatTab() *fyne.Container {
 	tabs.OnSelected = func(ti *container.TabItem) {
 		name = ti.Text
 	}
+
+	tabs.OnClosed = func (ti *container.TabItem)  {
+		templater.RemoveTemplate(ti.Text)
+		
+	}
 	
 	addBTN := widget.NewButton("Add Template", func() {
 
@@ -185,7 +206,7 @@ func TemplatTab() *fyne.Container {
 
 			scheduler.AddSchedule(dateENT.Text, x.Start_Time, x.End_Time, x.FlagsSlice()...)
 		}
-		checker.SetTime()
+		handler.SetTime()
 
 	})
 	
@@ -222,7 +243,7 @@ func TemplateTabs() []*container.TabItem {
 		tabs = append(tabs, c)
 	}
 	
-	return checker.SortTabs(tabs)
+	return handler.SortTabs(tabs)
 }
 
 func TemplateList(t []templater.Template) *widget.List {
@@ -277,7 +298,7 @@ func TemplateForm(list *widget.List,b *binding.UntypedList) *widget.Form {
 			{Widget: saveBTN},
 		},
 		OnSubmit: func() {
-			(*b).Append(templater.NewTemplate(tName.Text, stEntry.Text, etEntry.Text, checker.CreateFlags(flags.Selected)...))
+			(*b).Append(templater.NewTemplate(tName.Text, stEntry.Text, etEntry.Text, handler.CreateFlags(flags.Selected)...))
 			
 			stEntry.Text = ""
 			etEntry.Text = ""

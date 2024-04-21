@@ -66,7 +66,7 @@ func CustomerView() {
 		for range time.Tick(time.Second) {
 			updateClock(ctLBL)
 			updateOpen(openLBL)
-			updateStatus(statusLBL,openLBL)
+			updateStatus(statusLBL)
 			updateAnnouncments(announcmentsBODY)
 			content.Refresh()
 		}
@@ -88,7 +88,7 @@ func updateOpen(open *canvas.Text) {
 	open.Color = colour
 }
 
-func updateStatus(status *canvas.Text, open *canvas.Text) {
+func updateStatus(status *canvas.Text) {
 	if handler.Status == "Closed" {
 		status.Text = "The Tech Office will reopen at " + handler.GetReturnTime()
 		return

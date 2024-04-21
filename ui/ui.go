@@ -116,9 +116,9 @@ func AddForm(data binding.UntypedList) *widget.Form {
 			s := scheduler.NewSchedule(stEntry.Text, etEntry.Text, dtEntry.Text,handler.CreateFlags(flags.Selected)...)
 			scheduler.AddSchedule(dtEntry.Text, stEntry.Text, etEntry.Text, handler.CreateFlags(flags.Selected)...)
 			data.Append(s)
-			// if dtEntry.Text == handler.GetDate() {
-			// 	handler.SetTime()
-			// }
+			if dtEntry.Text == handler.GetDate() {
+				handler.SetTime()
+			}
 		},
 	}
 }
@@ -146,6 +146,8 @@ func Remove(data binding.UntypedList) *fyne.Container {
 
 	removeAllBTN := widget.NewButton("Remove All", func() {
 		handler.RemoveAll()
+		s := make([]interface{},0)
+		data.Set(s)
 		rl.UnselectAll()
 		rl.Refresh()
 	})

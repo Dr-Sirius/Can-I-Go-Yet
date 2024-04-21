@@ -15,7 +15,7 @@ import (
 var sch []scheduler.Schedule
 var stayOpen bool = false
 var Announcments string = ""
-var Status string = "Break"
+var Status string = ""
 var DefaultTemplate = ""
 
 func SetTime() {
@@ -35,21 +35,12 @@ func SetTime() {
 
 func CheckTime() (string, color.Color) {
 	if len(sch) == 0 {
-		log.Println("SCH = 0")
+		Status = "Open"
 		return setOpen()
 
-	} else if time.Now().Equal(GetCurrentSchedule().StartTime) || (time.Now().After(GetCurrentSchedule().StartTime) && time.Now().Before(GetCurrentSchedule().EndTime)) {
-		log.Println("Starttime")
+	} else if !GetCurrentSchedule().StartTime.Equal(time.Time{}) {
 		return CheckFlags()
-
-	} else if time.Now().Equal(GetCurrentSchedule().EndTime) || time.Now().After(GetCurrentSchedule().EndTime) {
-		log.Println("Endtime")
-
-		Status = "Closed"
-		return setClosed()
-
 	}
-
 	if stayOpen {
 		Status = "Open"
 		return setOpen()
@@ -115,10 +106,27 @@ func GetCurrentSchedule() scheduler.Schedule {
 	return sch[checkSchedule()]
 }
 
+func GetNextSchedule() scheduler.Schedule {
+	if checkNextSchedule() == -1 {
+		return scheduler.Schedule{}
+	}
+	return sch[checkNextSchedule()]
+}
+
+func checkNextSchedule() int {
+	for i, x := range sch {
+		if time.Now().Before(x.StartTime) {
+			return i
+		}
+	}
+	return -1
+}
+
 func checkSchedule() int {
 	for i, x := range sch {
+		log.Println(x)
 		if time.Now().Equal(x.StartTime) || (time.Now().After(x.StartTime) && time.Now().Before(x.EndTime)) {
-
+			
 			return i
 		}
 	}
@@ -134,12 +142,7 @@ func GetStringSchedules() []string {
 }
 
 func GetReturnTime() string {
-
-	if GetCurrentSchedule().StartTime.After(time.Now()) {
-		log.Println(true)
-		return GetCurrentSchedule().StringStartTime()
-	}
-	return GetCurrentSchedule().StringEndTime()
+	return GetNextSchedule().StringStartTime()
 }
 
 func Remove(index int) {
@@ -165,11 +168,11 @@ func RemoveAll() {
 	os.WriteFile("Schedules/Schedules.csv", []byte("Date, Start_Time, End_Time, Flags"), os.ModePerm)
 }
 
-func remove(s []scheduler.Schedule, index int) []scheduler.Schedule {
-	sd := s[0:index]
-	sd = append(sd, s[index+1:]...)
-	return sd
-}
+// func remove(s []scheduler.Schedule, index int) []scheduler.Schedule {
+// 	sd := s[0:index]
+// 	sd = append(sd, s[index+1:]...)
+// 	return sd
+// }
 
 func CreateFlags(flags []string) []int {
 	f := []int{}

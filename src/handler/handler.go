@@ -5,7 +5,6 @@ import (
 	"can-i-go-yet/src/scheduler"
 	"fmt"
 	"image/color"
-	"log"
 	"os"
 	"time"
 
@@ -21,13 +20,12 @@ var DefaultTemplate = ""
 func SetTime() {
 	s := scheduler.LoadSchedules()
 	sch = scheduler.NewDayFromTime(time.Now(), s...).Schedules
-	log.Println(sch)
 	for _, x := range sch {
 		if time.Now().Equal(x.StartTime) || (time.Now().After(x.StartTime) && time.Now().Before(x.EndTime)) {
 			return
 		}
 	}
-	if len(sch) == 0 && DefaultTemplate != ""{
+	if len(sch) == 0 && DefaultTemplate != "" {
 		sch = converter.TemplateToSchedule(DefaultTemplate, time.Now().Format("2006-01-02"))
 	}
 
@@ -124,9 +122,8 @@ func checkNextSchedule() int {
 
 func checkSchedule() int {
 	for i, x := range sch {
-		log.Println(x)
 		if time.Now().Equal(x.StartTime) || (time.Now().After(x.StartTime) && time.Now().Before(x.EndTime)) {
-			
+
 			return i
 		}
 	}

@@ -124,7 +124,7 @@ func LoadTemplate(name string) []Template {
 		var fs []int
 		for _, x := range f {
 			cf, err := strconv.Atoi(strings.Trim(x, " "))
-			if err != nil {
+			if !errors.Is(err,strconv.ErrSyntax) && err != nil {
 				log.Println(err)
 			}
 			fs = append(fs, cf)
@@ -147,7 +147,6 @@ func GetAllTemplates() map[string][]Template {
 	t := make(map[string][]Template)
 
 	for _, e := range entries {
-		log.Println(e.Name())
 		tp := LoadTemplate(e.Name()[2 : len(e.Name())-4])
 		t[e.Name()[2:len(e.Name())-4]] = tp
 

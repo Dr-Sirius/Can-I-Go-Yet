@@ -83,7 +83,6 @@ func NewDay(date string, schedules ...Schedule) Day {
 		}
 
 		dt := fmt.Sprint(y) + "-" + mt + "-" + fmt.Sprint(d)
-		log.Println(dt)
 		if dt == date {
 			s = append(s, x)
 		}
@@ -288,7 +287,7 @@ func LoadSchedules() []Schedule {
 		var fs []int
 		for _, x := range f {
 			cf, err := strconv.Atoi(strings.Trim(x, " "))
-			if err != nil {
+			if !errors.Is(err,strconv.ErrSyntax) && err != nil {
 				log.Println(err)
 			}
 			fs = append(fs, cf)
@@ -326,7 +325,6 @@ func AddSchedule(date string, startTime string, endTime string, flags ...int) {
 
 func RemoveSchedule(s Schedule) {
 	sch := LoadSchedules()
-	log.Println(s)
 	for i, x := range sch {
 		if x.Equal(s) {
 			sch = append(sch[0:i], sch[i+1:]...)

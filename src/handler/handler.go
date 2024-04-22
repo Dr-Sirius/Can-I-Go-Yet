@@ -15,7 +15,7 @@ var sch []scheduler.Schedule
 var stayOpen bool = false
 var Announcments string = ""
 var Status string = ""
-var DefaultTemplate = ""
+var defaultTemplate = ""
 
 func SetTime() {
 	s := scheduler.LoadSchedules()
@@ -25,8 +25,8 @@ func SetTime() {
 			return
 		}
 	}
-	if len(sch) == 0 && DefaultTemplate != "" {
-		sch = converter.TemplateToSchedule(DefaultTemplate, time.Now().Format("2006-01-02"))
+	if len(sch) == 0 && GetDefaultTemplate() != "" {
+		sch = converter.TemplateToSchedule(GetDefaultTemplate(), time.Now().Format("2006-01-02"))
 	}
 
 }
@@ -204,4 +204,20 @@ func SortTabs(tabs []*container.TabItem) []*container.TabItem {
 		}
 	}
 	return tabs
+}
+
+func SetDefaultTemplate(name string) {
+	defaultTemplate = name
+}
+
+func SetStayOpen(b bool) {
+	stayOpen = b
+}
+
+func GetDefaultTemplate() string {
+	return defaultTemplate
+}
+
+func GetStayOpen() bool {
+	return stayOpen
 }

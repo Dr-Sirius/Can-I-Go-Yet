@@ -1,10 +1,10 @@
 package ui
 
 import (
+	"can-i-go-yet/src/converter"
 	"can-i-go-yet/src/handler"
 	"can-i-go-yet/src/scheduler"
 	"can-i-go-yet/src/templater"
-	"can-i-go-yet/src/converter"
 
 	"image/color"
 	"time"
@@ -23,12 +23,11 @@ import (
 func Run() {
 	app := app.New()
 	app.Settings().SetTheme(theme.LightTheme())
-	
+
 	myWindow := app.NewWindow("Can I Go Yet?")
-	
-	
+
 	b := binding.NewUntypedList()
-	for _,x := range scheduler.LoadSchedules(){
+	for _, x := range scheduler.LoadSchedules() {
 		b.Append(x)
 	}
 
@@ -39,6 +38,7 @@ func Run() {
 		container.NewTabItem("Remove Schedule", Remove(b)),
 		container.NewTabItem("Templates", TemplatTab()),
 		container.NewTabItem("Build Template", BuildTemplatTab()),
+		container.NewTabItem("Settings", SettingsTab()),
 	)
 
 	myWindow.SetContent(content)
@@ -53,7 +53,7 @@ func TodayList(data binding.UntypedList) *widget.List {
 	return widget.NewListWithData(
 		data,
 		func() fyne.CanvasObject {
-			
+
 			lbl := canvas.NewText("template", color.Black)
 			lbl.TextSize = 15
 			return lbl
@@ -113,7 +113,7 @@ func AddForm(data binding.UntypedList) *widget.Form {
 			{Text: "Flags", Widget: &flags},
 		},
 		OnSubmit: func() {
-			s := scheduler.NewSchedule(stEntry.Text, etEntry.Text, dtEntry.Text,handler.CreateFlags(flags.Selected)...)
+			s := scheduler.NewSchedule(stEntry.Text, etEntry.Text, dtEntry.Text, handler.CreateFlags(flags.Selected)...)
 			scheduler.AddSchedule(dtEntry.Text, stEntry.Text, etEntry.Text, handler.CreateFlags(flags.Selected)...)
 			data.Append(s)
 			if dtEntry.Text == handler.GetDate() {
@@ -135,7 +135,7 @@ func Remove(data binding.UntypedList) *fyne.Container {
 		}
 
 		handler.Remove(selected)
-		s,_ := data.Get()
+		s, _ := data.Get()
 		temp := s[selected+1:]
 		s = append(s[:selected], temp...)
 		data.Set(s)
@@ -146,7 +146,7 @@ func Remove(data binding.UntypedList) *fyne.Container {
 
 	removeAllBTN := widget.NewButton("Remove All", func() {
 		handler.RemoveAll()
-		s := make([]interface{},0)
+		s := make([]interface{}, 0)
 		data.Set(s)
 		rl.UnselectAll()
 		rl.Refresh()
@@ -197,11 +197,11 @@ func TemplatTab() *fyne.Container {
 		name = ti.Text
 	}
 
-	tabs.OnClosed = func (ti *container.TabItem)  {
+	tabs.OnClosed = func(ti *container.TabItem) {
 		templater.RemoveTemplate(ti.Text)
-		
+
 	}
-	
+
 	addBTN := widget.NewButton("Add Template", func() {
 
 		for _, x := range templater.LoadTemplate(name) {
@@ -211,7 +211,7 @@ func TemplatTab() *fyne.Container {
 		handler.SetTime()
 
 	})
-	
+
 	go func() {
 		for range time.Tick(time.Second) {
 			tabs.SetItems(TemplateTabs())
@@ -231,11 +231,9 @@ func TemplatTab() *fyne.Container {
 
 }
 
-
-
 func TemplateTabs() []*container.TabItem {
 	var tabs []*container.TabItem
-	
+
 	for i, x := range templater.GetAllTemplates() {
 		c := container.NewTabItem(
 			i,
@@ -244,7 +242,7 @@ func TemplateTabs() []*container.TabItem {
 
 		tabs = append(tabs, c)
 	}
-	
+
 	return handler.SortTabs(tabs)
 }
 
@@ -265,17 +263,17 @@ func TemplateList(t []templater.Template) *widget.List {
 	)
 }
 
-func TemplateForm(list *widget.List,b *binding.UntypedList) *widget.Form {
+func TemplateForm(list *widget.List, b *binding.UntypedList) *widget.Form {
 	tName := widget.NewEntry()
 	tName.SetPlaceHolder("Alpha")
 	stEntry := widget.NewEntry()
 	stEntry.SetPlaceHolder("12:00 am")
 	etEntry := widget.NewEntry()
 	etEntry.SetPlaceHolder("12:00 pm")
-	saveBTN := widget.NewButton("Save",func() {
+	saveBTN := widget.NewButton("Save", func() {
 		t := []templater.Template{}
 		for i := range (*b).Length() {
-			item,_ := (*b).GetItem(i)
+			item, _ := (*b).GetItem(i)
 			t = append(t, converter.DataItemToTemplate(item))
 		}
 		templater.AddTemplate(t)
@@ -290,7 +288,6 @@ func TemplateForm(list *widget.List,b *binding.UntypedList) *widget.Form {
 		},
 	}
 
-	
 	return &widget.Form{
 		Items: []*widget.FormItem{ // we can specify items in the constructor
 			{Text: "Template Name", Widget: tName},
@@ -301,7 +298,7 @@ func TemplateForm(list *widget.List,b *binding.UntypedList) *widget.Form {
 		},
 		OnSubmit: func() {
 			(*b).Append(templater.NewTemplate(tName.Text, stEntry.Text, etEntry.Text, handler.CreateFlags(flags.Selected)...))
-			
+
 			stEntry.Text = ""
 			etEntry.Text = ""
 			stEntry.Refresh()
@@ -315,27 +312,44 @@ func BuildTemplateList(data binding.UntypedList) *widget.List {
 	return widget.NewListWithData(
 		data,
 		func() fyne.CanvasObject {
-			lbl := canvas.NewText("template",color.Black)
-			lbl.TextSize = 15	
+			lbl := canvas.NewText("template", color.Black)
+			lbl.TextSize = 15
 			return lbl
 		},
 		func(di binding.DataItem, o fyne.CanvasObject) {
-			
+
 			o.(*canvas.Text).Text = converter.DataItemToTemplate(di).PrettyString()
 		},
 	)
 }
 
 func BuildTemplatTab() *container.Split {
-	
+
 	b := binding.NewUntypedList()
 
 	ls := BuildTemplateList(b)
 
 	content := container.NewVSplit(
-		ls,	
-		TemplateForm(ls,&b),
+		ls,
+		TemplateForm(ls, &b),
 	)
-	
+
 	return content
+}
+
+func SettingsTab() *widget.Form {
+	tName := widget.NewEntry()
+	tName.Text = handler.GetDefaultTemplate()
+	stEntry := widget.NewCheck("", func(b bool) { handler.SetStayOpen(b) })
+
+	return &widget.Form{
+		Items: []*widget.FormItem{ // we can specify items in the constructor
+			{Text: "Default Template", Widget: tName},
+			{Text: "Stay Open", Widget: stEntry},
+		},
+		OnSubmit: func() {
+			handler.SetDefaultTemplate(tName.Text)
+
+		},
+	}
 }

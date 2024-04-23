@@ -28,7 +28,7 @@ func SetTime() {
 	}
 	if len(sch) == 0 && GetDefaultTemplate() != "" {
 		sch = converter.TemplateToSchedule(GetDefaultTemplate(), time.Now().Format("2006-01-02"))
-	}
+	} 
 
 }
 

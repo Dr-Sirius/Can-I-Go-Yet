@@ -39,7 +39,7 @@ func Run() {
 		container.NewTabItem("Announcments", Announcments()),
 		container.NewTabItem("Add Schedule", AddForm(b)),
 		container.NewTabItem("Remove Schedule", Remove(b)),
-		container.NewTabItem("Templates", TemplateTab()),
+		container.NewTabItem("Templates", TemplateTab(b)),
 		container.NewTabItem("Build Template", BuildTemplatTab()),
 		container.NewTabItem("Settings", SettingsTab(myWindow)),
 	)
@@ -187,7 +187,7 @@ func Announcments() *widget.Form {
 	}
 }
 
-func TemplateTab() *fyne.Container {
+func TemplateTab(data binding.UntypedList) *fyne.Container {
 	todayLBL := canvas.NewText("Templates", color.Black)
 	todayLBL.TextSize = 35
 	tabs := container.NewDocTabs(TemplateTabs()...)
@@ -210,9 +210,12 @@ func TemplateTab() *fyne.Container {
 	addBTN := widget.NewButton("Add Template", func() {
 
 		for _, x := range templater.LoadTemplate(name) {
-
+			
 			scheduler.AddSchedule(dateENT.Text, x.Start_Time, x.End_Time, x.FlagsSlice()...)
+			data.Append(scheduler.NewSchedule(x.Start_Time,x.End_Time,dateENT.Text, x.FlagsSlice()...))
+			
 		}
+		
 		handler.SetTime()
 
 	})

@@ -28,7 +28,16 @@ func NewTemplate(name string, startTime string, endTime string, flags ...int) Te
 	return Template{Name: name, Start_Time: startTime, End_Time: endTime, Flags: f}
 }
 
-
+func CreateTemplates() {
+	if _, err := os.Stat("Templates"); errors.Is(err, os.ErrNotExist) {
+		if err := os.Mkdir("Templates", os.ModePerm); err != nil {
+			log.Println(err)
+		} else {
+			os.Create("Templates")
+		}
+	}
+	
+}
 
 func CreateTemplate(Name string) error {
 	if _, err := os.Stat("Templates"); errors.Is(err, os.ErrNotExist) {
@@ -142,7 +151,7 @@ func RemoveTemplate(name string) error {
 func GetAllTemplates() map[string][]Template {
 	entries, err := os.ReadDir("Templates")
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	t := make(map[string][]Template)
 

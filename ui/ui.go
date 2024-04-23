@@ -11,17 +11,18 @@ import (
 	"time"
 
 	"fyne.io/fyne/v2"
-	_ "fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
-	_ "fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
+/*
+Creates and Runs a new fyne.App - handles all ui related events
+*/
 func Run() {
 	app := app.New()
 	app.Settings().SetTheme(theme.LightTheme())
@@ -38,7 +39,7 @@ func Run() {
 		container.NewTabItem("Announcments", Announcments()),
 		container.NewTabItem("Add Schedule", AddForm(b)),
 		container.NewTabItem("Remove Schedule", Remove(b)),
-		container.NewTabItem("Templates", TemplatTab()),
+		container.NewTabItem("Templates", TemplateTab()),
 		container.NewTabItem("Build Template", BuildTemplatTab()),
 		container.NewTabItem("Settings", SettingsTab(myWindow)),
 	)
@@ -186,14 +187,16 @@ func Announcments() *widget.Form {
 	}
 }
 
-func TemplatTab() *fyne.Container {
+func TemplateTab() *fyne.Container {
 	todayLBL := canvas.NewText("Templates", color.Black)
 	todayLBL.TextSize = 35
 	tabs := container.NewDocTabs(TemplateTabs()...)
 	dateENT := widget.NewEntry()
 	dateENT.SetText(time.Now().Format("2006-01-02"))
-
-	name := tabs.Items[0].Text
+	name := ""
+	if len(tabs.Items) != 0 {
+		name = tabs.Items[0].Text
+	}
 
 	tabs.OnSelected = func(ti *container.TabItem) {
 		name = ti.Text
@@ -235,15 +238,18 @@ func TemplatTab() *fyne.Container {
 
 func TemplateTabs() []*container.TabItem {
 	var tabs []*container.TabItem
-
-	for i, x := range templater.GetAllTemplates() {
-		c := container.NewTabItem(
-			i,
-			TemplateList(x),
-		)
-
-		tabs = append(tabs, c)
+	t := templater.GetAllTemplates()
+	if len(t) != 0 {
+		for i, x := range  t{
+			c := container.NewTabItem(
+				i,
+				TemplateList(x),
+			)
+	
+			tabs = append(tabs, c)
+		}
 	}
+	
 
 	return handler.SortTabs(tabs)
 }
@@ -351,20 +357,20 @@ func SettingsTab(w fyne.Window) *widget.Form {
 	var cColor color.Color = converter.IntToColor(settings.LoadSettings().ClosedColor)
 	clRect := canvas.NewRectangle(cColor)
 
-	openColorDialog := dialog.NewColorPicker("Open Color", "", func(c color.Color) { oColor = c; SetColor(c,opRect)}, w)
+	openColorDialog := dialog.NewColorPicker("Open Color", "", func(c color.Color) { oColor = c; SetColor(c, opRect) }, w)
 	openColorDialog.Advanced = true
-	closedColorDialog := dialog.NewColorPicker("Closed Color", "", func(c color.Color) { cColor = c; SetColor(c,clRect) }, w)
+	closedColorDialog := dialog.NewColorPicker("Closed Color", "", func(c color.Color) { cColor = c; SetColor(c, clRect) }, w)
 	closedColorDialog.Advanced = true
-	breakColorDialog := dialog.NewColorPicker("Break Color", "", func(c color.Color) { bColor = c;SetColor(c,bkRect) }, w)
+	breakColorDialog := dialog.NewColorPicker("Break Color", "", func(c color.Color) { bColor = c; SetColor(c, bkRect) }, w)
 	breakColorDialog.Advanced = true
 
-	opBTN := widget.NewButtonWithIcon("", theme.ColorPaletteIcon(),openColorDialog.Show)
-	clBTN := widget.NewButtonWithIcon("", theme.ColorPaletteIcon(),closedColorDialog.Show)
-	bkBTN := widget.NewButtonWithIcon("", theme.ColorPaletteIcon(),breakColorDialog.Show)
+	opBTN := widget.NewButtonWithIcon("", theme.ColorPaletteIcon(), openColorDialog.Show)
+	clBTN := widget.NewButtonWithIcon("", theme.ColorPaletteIcon(), closedColorDialog.Show)
+	bkBTN := widget.NewButtonWithIcon("", theme.ColorPaletteIcon(), breakColorDialog.Show)
 
-	oContent := container.NewGridWithColumns(2,opRect,opBTN)
-	cContent := container.NewGridWithColumns(2,clRect,clBTN)
-	bContent := container.NewGridWithColumns(2,bkRect,bkBTN)
+	oContent := container.NewGridWithColumns(2, opRect, opBTN)
+	cContent := container.NewGridWithColumns(2, clRect, clBTN)
+	bContent := container.NewGridWithColumns(2, bkRect, bkBTN)
 
 	stEntry := widget.NewEntry()
 	stEntry.SetPlaceHolder("7:30 am")
@@ -398,6 +404,6 @@ func SettingsTab(w fyne.Window) *widget.Form {
 	}
 }
 
-func SetColor(c color.Color,r *canvas.Rectangle) {
+func SetColor(c color.Color, r *canvas.Rectangle) {
 	r.FillColor = c
 }

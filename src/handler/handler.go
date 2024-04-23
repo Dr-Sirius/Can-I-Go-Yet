@@ -195,6 +195,7 @@ func CreateFlags(flags []string) []int {
 }
 
 func SortTabs(tabs []*container.TabItem) []*container.TabItem {
+	
 	for i := len(tabs) - 1; i >= 0; i -= 1 {
 
 		for x := range i {

@@ -2,6 +2,7 @@ package settings
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"os"
@@ -40,4 +41,27 @@ func (s Settings) SaveSettings() {
 		log.Println(err)
 	}
 
+}
+
+func CreateSettings(){
+	s := Settings{
+		DefaultTemplate: "",
+		StayOpen: true,
+		OpenColor: [4]int{0,255,0,255},
+		ClosedColor: [4]int{255,0,0,255},
+		BreakColor: [4]int{0,0,255,255},
+		StandardHours: [2]string{"7:45 am","2:30 pm"},
+	}
+	ms, err := json.MarshalIndent(s,"","	")
+	if err != nil {
+		log.Println(err)
+	}
+	if _, err := os.Stat("Settings/Settings.jsonv"); errors.Is(err, os.ErrNotExist) {
+		if err := os.Mkdir("Settings", os.ModePerm); err != nil {
+			log.Println(err)
+		} else {
+			os.Create("Settings/Settings.json")
+			os.WriteFile("Settings/Settings.json", ms, os.ModePerm)
+		}
+	}
 }

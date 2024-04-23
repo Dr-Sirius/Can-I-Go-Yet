@@ -246,7 +246,7 @@ func (s Schedule) Date() string {
 
 func (s Schedule) FlagsSlice() []int {
 	x := []int{}
-	for a, _ := range s.Flags {
+	for a := range s.Flags {
 		x = append(x, a)
 	}
 	slices.Sort(x)

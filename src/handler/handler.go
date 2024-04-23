@@ -12,12 +12,15 @@ import (
 	"fyne.io/fyne/v2/container"
 )
 
-var sch []scheduler.Schedule
-var stayOpen bool = settings.LoadSettings().StayOpen
+var sch []scheduler.Schedule 
+var stayOpen bool = settings.LoadSettings().StayOpen 
 var Announcments string = ""
 var Status string = ""
 var defaultTemplate = settings.LoadSettings().DefaultTemplate
 
+/*
+Loads and Sets schedules for the current date
+*/
 func SetTime() {
 	s := scheduler.LoadSchedules()
 	sch = scheduler.NewDayFromTime(time.Now(), s...).Schedules
@@ -32,6 +35,9 @@ func SetTime() {
 
 }
 
+/*
+Checks and returns status of current schedule if there is one else returns status based on stayOpen var
+*/
 func CheckTime() (string, color.Color) {
 	if len(sch) == 0 {
 		Status = "Open"
@@ -50,6 +56,9 @@ func CheckTime() (string, color.Color) {
 
 }
 
+/*
+Checks and returns status of current schedule based on its flags
+*/
 func CheckFlags() (string, color.Color) {
 	flags := GetCurrentSchedule().Flags
 	if _, ok := flags[scheduler.BRKE]; ok {
@@ -71,21 +80,33 @@ func CheckFlags() (string, color.Color) {
 
 }
 
+/*
+Returns color.Color based on OpenColor settings in Settings.json
+*/
 func setOpen() (string, color.Color) {
 	rgba := settings.LoadSettings().OpenColor
 	return "Open", color.RGBA{uint8(rgba[0]),uint8(rgba[1]),uint8(rgba[2]),uint8(rgba[3])}
 }
 
+/*
+Returns color.Color based on ClosedColor settings in Settings.json
+*/
 func setClosed() (string, color.Color) {
 	rgba := settings.LoadSettings().ClosedColor
 	return "Closed", color.RGBA{uint8(rgba[0]),uint8(rgba[1]),uint8(rgba[2]),uint8(rgba[3])}
 }
 
+/*
+Returns color.Color based on BreakColor settings in Settings.json
+*/
 func setOnBreak() (string, color.Color) {
 	rgba := settings.LoadSettings().BreakColor
 	return "Open", color.RGBA{uint8(rgba[0]),uint8(rgba[1]),uint8(rgba[2]),uint8(rgba[3])}
 }
 
+/*
+Returns todays date as a string formmated as yyyy-mm-dd
+*/
 func GetDate() string {
 	y, m, d := time.Now().Date()
 	mt := fmt.Sprint(int(m))
@@ -97,10 +118,16 @@ func GetDate() string {
 	return dt
 }
 
+/*
+Returns all of todays schedules
+*/
 func GetSchedules() []scheduler.Schedule {
 	return sch
 }
 
+/*
+Returns the current schedule from todays schedule based on current time
+*/
 func GetCurrentSchedule() scheduler.Schedule {
 	if checkSchedule() == -1 {
 		return scheduler.Schedule{}
@@ -108,6 +135,9 @@ func GetCurrentSchedule() scheduler.Schedule {
 	return sch[checkSchedule()]
 }
 
+/*
+Returns the next schedule from todays schedule based on current schedule and time
+*/
 func GetNextSchedule() scheduler.Schedule {
 	if checkNextSchedule() == -1 {
 		return scheduler.Schedule{}
@@ -115,6 +145,9 @@ func GetNextSchedule() scheduler.Schedule {
 	return sch[checkNextSchedule()]
 }
 
+/*
+Returns index of next schedule based on current time
+*/
 func checkNextSchedule() int {
 	for i, x := range sch {
 		if time.Now().Before(x.StartTime) {
@@ -124,6 +157,9 @@ func checkNextSchedule() int {
 	return -1
 }
 
+/*
+Returns index of current schedule based on current time
+*/
 func checkSchedule() int {
 	for i, x := range sch {
 		if time.Now().Equal(x.StartTime) || (time.Now().After(x.StartTime) && time.Now().Before(x.EndTime)) {
@@ -134,6 +170,9 @@ func checkSchedule() int {
 	return -1
 }
 
+/*
+Returns a string array containing string versions of todays schedules
+*/
 func GetStringSchedules() []string {
 	s := []string{}
 	for _, x := range sch {
@@ -142,10 +181,16 @@ func GetStringSchedules() []string {
 	return s
 }
 
+/*
+Returns string version of GetNextSchedule StartTime
+*/
 func GetReturnTime() string {
 	return GetNextSchedule().StringStartTime()
 }
 
+/*
+Removes given schedule at index from sch and Schedules.csv
+*/
 func Remove(index int) {
 
 	if (len(sch) == 1 || len(sch) == 0) && sch[0].Equal(scheduler.Schedule{}) {
@@ -165,16 +210,18 @@ func Remove(index int) {
 
 }
 
+/*
+Removes all schedules from sch and Schedules.csv
+*/
 func RemoveAll() {
 	os.WriteFile("Schedules/Schedules.csv", []byte("Date, Start_Time, End_Time, Flags"), os.ModePerm)
 }
 
-// func remove(s []scheduler.Schedule, index int) []scheduler.Schedule {
-// 	sd := s[0:index]
-// 	sd = append(sd, s[index+1:]...)
-// 	return sd
-// }
+/*
+Returns an array of ints containg Scheduler flag const values
 
+Ex. []string{"Open","Understaffed","Break"} -> []int{0,2,1}
+*/
 func CreateFlags(flags []string) []int {
 	f := []int{}
 	for _, x := range flags {
@@ -194,6 +241,9 @@ func CreateFlags(flags []string) []int {
 	return f
 }
 
+/*
+Returns sorted []*container.TabItem using bubble sort
+*/
 func SortTabs(tabs []*container.TabItem) []*container.TabItem {
 	
 	for i := len(tabs) - 1; i >= 0; i -= 1 {
@@ -210,6 +260,7 @@ func SortTabs(tabs []*container.TabItem) []*container.TabItem {
 	}
 	return tabs
 }
+
 
 func SetDefaultTemplate(name string) {
 	defaultTemplate = name

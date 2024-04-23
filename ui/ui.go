@@ -51,6 +51,11 @@ func Run() {
 
 }
 
+//region Schedules UI
+
+/* 
+Creates a *widget.List that contains todays schedules
+*/
 func TodayList(data binding.UntypedList) *widget.List {
 
 	return widget.NewListWithData(
@@ -67,6 +72,9 @@ func TodayList(data binding.UntypedList) *widget.List {
 	)
 }
 
+/*
+Creates a *fyne.Container tab that contains information about the todays date including customer view
+*/
 func TodayTab(data binding.UntypedList) *fyne.Container {
 	todayLBL := canvas.NewText("Today's Schedule", color.Black)
 	todayLBL.TextSize = 35
@@ -92,6 +100,9 @@ func TodayTab(data binding.UntypedList) *fyne.Container {
 
 }
 
+/*
+Creates a *widget.Form for creating new schedule
+*/
 func AddForm(data binding.UntypedList) *widget.Form {
 	dtEntry := widget.NewEntry()
 	dtEntry.SetPlaceHolder("2024-01-01")
@@ -126,6 +137,9 @@ func AddForm(data binding.UntypedList) *widget.Form {
 	}
 }
 
+/*
+Creates *fyne.Container for removing schedules on todays date
+*/
 func Remove(data binding.UntypedList) *fyne.Container {
 	selected := -1
 	lbl := canvas.NewText("", color.Black)
@@ -174,6 +188,9 @@ func Remove(data binding.UntypedList) *fyne.Container {
 
 }
 
+/*
+Creates *widget.Form for adding anouncment to customer view
+*/
 func Announcments() *widget.Form {
 	anc := widget.NewMultiLineEntry()
 
@@ -187,6 +204,11 @@ func Announcments() *widget.Form {
 	}
 }
 
+//region Templates UI
+
+/*
+Creates *fyne.Container for viewing templates and adding them to todays schedule
+*/
 func TemplateTab(data binding.UntypedList) *fyne.Container {
 	todayLBL := canvas.NewText("Templates", color.Black)
 	todayLBL.TextSize = 35
@@ -239,6 +261,10 @@ func TemplateTab(data binding.UntypedList) *fyne.Container {
 
 }
 
+
+/*
+Creates []*container.TabItem that holds tabs for each saved template in Templates folder
+*/
 func TemplateTabs() []*container.TabItem {
 	var tabs []*container.TabItem
 	t := templater.GetAllTemplates()
@@ -257,6 +283,10 @@ func TemplateTabs() []*container.TabItem {
 	return handler.SortTabs(tabs)
 }
 
+
+/*
+Creates *widget.List that displays template information for the passed []templater.Template
+*/
 func TemplateList(t []templater.Template) *widget.List {
 	return widget.NewList(
 		func() int {
@@ -274,6 +304,11 @@ func TemplateList(t []templater.Template) *widget.List {
 	)
 }
 
+//region Build Templates UI
+
+/*
+Creates *widget.Form for creating new template
+*/
 func TemplateForm(list *widget.List, b *binding.UntypedList) *widget.Form {
 	tName := widget.NewEntry()
 	tName.SetPlaceHolder("Alpha")
@@ -319,6 +354,10 @@ func TemplateForm(list *widget.List, b *binding.UntypedList) *widget.Form {
 	}
 }
 
+
+/*
+Creates *widget.List for displaying information about template being made in BuildTemplateTab()
+*/
 func BuildTemplateList(data binding.UntypedList) *widget.List {
 	return widget.NewListWithData(
 		data,
@@ -334,6 +373,9 @@ func BuildTemplateList(data binding.UntypedList) *widget.List {
 	)
 }
 
+/*
+Creates *container.Split for building new templates
+*/
 func BuildTemplatTab() *container.Split {
 
 	b := binding.NewUntypedList()
@@ -348,6 +390,12 @@ func BuildTemplatTab() *container.Split {
 	return content
 }
 
+//region Settings UI
+
+
+/*
+Creates *widget.Form for displaying and changing settings - reads and writes to Settings/Settings.json
+*/
 func SettingsTab(w fyne.Window) *widget.Form {
 	tName := widget.NewEntry()
 	tName.Text = handler.GetDefaultTemplate()
@@ -407,6 +455,9 @@ func SettingsTab(w fyne.Window) *widget.Form {
 	}
 }
 
+/*
+Sets passed *canvas.Rectange color to passed color.Color
+*/
 func SetColor(c color.Color, r *canvas.Rectangle) {
 	r.FillColor = c
 }

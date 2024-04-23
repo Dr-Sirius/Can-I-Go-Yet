@@ -134,13 +134,18 @@ func scheduleSort(Schedules ...Schedule) []Schedule {
 	}
 	return Schedules
 }
-
+/*
+Returns string version of schedule
+*/
 func (s Schedule) String() string {
 	st := s.StringStartTime()
 	et := s.StringEndTime()
 	return st + " - " + et + " " + fmt.Sprint(s.Flags)
 }
 
+/*
+Returns formated string version of schedule
+*/
 func (s Schedule) PrettyString() string {
 	st := s.StringStartTime()
 	et := s.StringEndTime()
@@ -217,6 +222,9 @@ func (s Schedule) StringEndTime() string {
 	return hs + ":" + ms + " " + tm
 }
 
+/*
+Returns boolean based on if schedule s is equal to schedule o
+*/
 func (s Schedule) Equal(o Schedule) bool {
 	return s.StartTime.Equal(o.StartTime) && s.EndTime.Equal(o.EndTime) && func() bool {
 		
@@ -234,6 +242,9 @@ func (s Schedule) Equal(o Schedule) bool {
 	}()
 }
 
+/*
+Returns string containg date formatted as yyyy-mm-dd
+*/
 func (s Schedule) Date() string {
 	y, m, d := s.StartTime.Date()
 	mt := fmt.Sprint(int(m))
@@ -244,6 +255,9 @@ func (s Schedule) Date() string {
 	return fmt.Sprint(y) + "-" + mt + "-" + fmt.Sprint(d)
 }
 
+/*
+Returns int slice containg all flags in schedule s
+*/
 func (s Schedule) FlagsSlice() []int {
 	x := []int{}
 	for a := range s.Flags {
@@ -252,6 +266,7 @@ func (s Schedule) FlagsSlice() []int {
 	slices.Sort(x)
 	return x
 }
+
 /*
 Returns an array of Schedule structs from the Schedules folder
 */
@@ -298,6 +313,9 @@ func LoadSchedules() []Schedule {
 	return s
 }
 
+/*
+Adds schedule to Schedules.csv
+*/
 func AddSchedule(date string, startTime string, endTime string, flags ...int) {
 	flagString := ""
 	for _, f := range flags {
@@ -323,6 +341,10 @@ func AddSchedule(date string, startTime string, endTime string, flags ...int) {
 	}
 }
 
+
+/*
+Removes passed schedule from Schedules.csv
+*/
 func RemoveSchedule(s Schedule) {
 	sch := LoadSchedules()
 	for i, x := range sch {

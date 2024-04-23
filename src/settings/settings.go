@@ -36,7 +36,7 @@ func (s Settings) SaveSettings() {
 	if err != nil {
 		log.Println(err)
 	}
-	if err = os.WriteFile("../../Settings/Settings.json",ms,os.ModePerm); err != nil {
+	if err = os.WriteFile("Settings/Settings.json",ms,os.ModePerm); err != nil {
 		log.Println(err)
 	}
 

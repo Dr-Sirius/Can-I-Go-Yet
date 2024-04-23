@@ -347,9 +347,9 @@ func SettingsTab(w fyne.Window) *widget.Form {
 	var oColor color.Color = converter.IntToColor(settings.LoadSettings().OpenColor)
 	opRect := canvas.NewRectangle(oColor)
 	var bColor color.Color = converter.IntToColor(settings.LoadSettings().BreakColor)
-	bkRect := canvas.NewRectangle(oColor)
+	bkRect := canvas.NewRectangle(bColor)
 	var cColor color.Color = converter.IntToColor(settings.LoadSettings().ClosedColor)
-	clRect := canvas.NewRectangle(oColor)
+	clRect := canvas.NewRectangle(cColor)
 
 	openColorDialog := dialog.NewColorPicker("Open Color", "", func(c color.Color) { oColor = c; SetColor(c,opRect)}, w)
 	openColorDialog.Advanced = true
@@ -358,13 +358,13 @@ func SettingsTab(w fyne.Window) *widget.Form {
 	breakColorDialog := dialog.NewColorPicker("Break Color", "", func(c color.Color) { bColor = c;SetColor(c,bkRect) }, w)
 	breakColorDialog.Advanced = true
 
-	opBTN := widget.NewButton("pick color", openColorDialog.Show)
-	clBTN := widget.NewButton("pick color", closedColorDialog.Show)
-	bkBTN := widget.NewButton("pick color", breakColorDialog.Show)
+	opBTN := widget.NewButtonWithIcon("", theme.ColorPaletteIcon(),openColorDialog.Show)
+	clBTN := widget.NewButtonWithIcon("", theme.ColorPaletteIcon(),closedColorDialog.Show)
+	bkBTN := widget.NewButtonWithIcon("", theme.ColorPaletteIcon(),breakColorDialog.Show)
 
-	oContent := container.NewHBox(opBTN,opRect)
-	cContent := container.NewHBox(clBTN,clRect)
-	bContent := container.NewHBox(bkBTN,bkRect)
+	oContent := container.NewGridWithColumns(2,opRect,opBTN)
+	cContent := container.NewGridWithColumns(2,clRect,clBTN)
+	bContent := container.NewGridWithColumns(2,bkRect,bkBTN)
 
 	stEntry := widget.NewEntry()
 	stEntry.SetPlaceHolder("7:30 am")
@@ -380,6 +380,7 @@ func SettingsTab(w fyne.Window) *widget.Form {
 			{Text: "Closed Label Color", Widget: cContent},
 			{Text: "Break Label Color", Widget: bContent},
 		},
+		SubmitText: "Save",
 		OnSubmit: func() {
 
 			s := settings.Settings{

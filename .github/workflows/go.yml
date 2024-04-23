@@ -20,6 +20,8 @@ jobs:
     - uses: actions/setup-go@v5
       with:
         go-version: '1.22' 
+    - name: Get packages
+      run: sudo apt-get install golang gcc libgl1-mesa-dev xorg-dev
     - name: Go Tidy
       run: go mod tidy && git diff --exit-code
 

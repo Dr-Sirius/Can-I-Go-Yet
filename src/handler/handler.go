@@ -3,6 +3,7 @@ package handler
 import (
 	"can-i-go-yet/src/converter"
 	"can-i-go-yet/src/scheduler"
+	"can-i-go-yet/src/settings"
 	"fmt"
 	"image/color"
 	"os"
@@ -12,10 +13,10 @@ import (
 )
 
 var sch []scheduler.Schedule
-var stayOpen bool = false
+var stayOpen bool = settings.LoadSettings().StayOpen
 var Announcments string = ""
 var Status string = ""
-var defaultTemplate = ""
+var defaultTemplate = settings.LoadSettings().DefaultTemplate
 
 func SetTime() {
 	s := scheduler.LoadSchedules()
@@ -71,15 +72,18 @@ func CheckFlags() (string, color.Color) {
 }
 
 func setOpen() (string, color.Color) {
-	return "Open", color.RGBA{0, 255, 0, 255}
+	rgba := settings.LoadSettings().OpenColor
+	return "Open", color.RGBA{uint8(rgba[0]),uint8(rgba[1]),uint8(rgba[2]),uint8(rgba[3])}
 }
 
 func setClosed() (string, color.Color) {
-	return "Closed", color.RGBA{R: 255, G: 0, B: 0, A: 255}
+	rgba := settings.LoadSettings().ClosedColor
+	return "Closed", color.RGBA{uint8(rgba[0]),uint8(rgba[1]),uint8(rgba[2]),uint8(rgba[3])}
 }
 
 func setOnBreak() (string, color.Color) {
-	return "Open", color.RGBA{255, 218, 28, 255}
+	rgba := settings.LoadSettings().BreakColor
+	return "Open", color.RGBA{uint8(rgba[0]),uint8(rgba[1]),uint8(rgba[2]),uint8(rgba[3])}
 }
 
 func GetDate() string {
@@ -220,4 +224,9 @@ func GetDefaultTemplate() string {
 
 func GetStayOpen() bool {
 	return stayOpen
+}
+
+func Update() {
+	defaultTemplate = settings.LoadSettings().DefaultTemplate
+	stayOpen = settings.LoadSettings().StayOpen
 }

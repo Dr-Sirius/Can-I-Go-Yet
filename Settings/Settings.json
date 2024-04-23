@@ -1,0 +1,26 @@
+{
+	"DefaultTemplate": "Demo",
+	"StayOpen": true,
+	"OpenColor": [
+		0,
+		255,
+		0,
+		255
+	],
+	"ClosedColor": [
+		255,
+		0,
+		0,
+		255
+	],
+	"BreakColor": [
+		0,
+		0,
+		255,
+		255
+	],
+	"StandarHours": [
+		"7:00 am",
+		"2:30 pm"
+	]
+}

@@ -4,6 +4,7 @@ import (
 	"can-i-go-yet/src/converter"
 	"can-i-go-yet/src/handler"
 	"can-i-go-yet/src/scheduler"
+	"can-i-go-yet/src/settings"
 	"can-i-go-yet/src/templater"
 
 	"image/color"
@@ -15,6 +16,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
 	_ "fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -38,7 +40,7 @@ func Run() {
 		container.NewTabItem("Remove Schedule", Remove(b)),
 		container.NewTabItem("Templates", TemplatTab()),
 		container.NewTabItem("Build Template", BuildTemplatTab()),
-		container.NewTabItem("Settings", SettingsTab()),
+		container.NewTabItem("Settings", SettingsTab(myWindow)),
 	)
 
 	myWindow.SetContent(content)
@@ -337,19 +339,64 @@ func BuildTemplatTab() *container.Split {
 	return content
 }
 
-func SettingsTab() *widget.Form {
+func SettingsTab(w fyne.Window) *widget.Form {
 	tName := widget.NewEntry()
 	tName.Text = handler.GetDefaultTemplate()
-	stEntry := widget.NewCheck("", func(b bool) { handler.SetStayOpen(b) })
+	stoCheck := widget.NewCheck("", func(b bool) { handler.SetStayOpen(b) })
+
+	var oColor color.Color = converter.IntToColor(settings.LoadSettings().OpenColor)
+	opRect := canvas.NewRectangle(oColor)
+	var bColor color.Color = converter.IntToColor(settings.LoadSettings().BreakColor)
+	bkRect := canvas.NewRectangle(oColor)
+	var cColor color.Color = converter.IntToColor(settings.LoadSettings().ClosedColor)
+	clRect := canvas.NewRectangle(oColor)
+
+	openColorDialog := dialog.NewColorPicker("Open Color", "", func(c color.Color) { oColor = c; SetColor(c,opRect)}, w)
+	openColorDialog.Advanced = true
+	closedColorDialog := dialog.NewColorPicker("Closed Color", "", func(c color.Color) { cColor = c; SetColor(c,clRect) }, w)
+	closedColorDialog.Advanced = true
+	breakColorDialog := dialog.NewColorPicker("Break Color", "", func(c color.Color) { bColor = c;SetColor(c,bkRect) }, w)
+	breakColorDialog.Advanced = true
+
+	opBTN := widget.NewButton("pick color", openColorDialog.Show)
+	clBTN := widget.NewButton("pick color", closedColorDialog.Show)
+	bkBTN := widget.NewButton("pick color", breakColorDialog.Show)
+
+	oContent := container.NewHBox(opBTN,opRect)
+	cContent := container.NewHBox(clBTN,clRect)
+	bContent := container.NewHBox(bkBTN,bkRect)
+
+	stEntry := widget.NewEntry()
+	stEntry.SetPlaceHolder("7:30 am")
+
+	etEntry := widget.NewEntry()
+	etEntry.SetPlaceHolder("2:30 pm")
 
 	return &widget.Form{
 		Items: []*widget.FormItem{ // we can specify items in the constructor
 			{Text: "Default Template", Widget: tName},
-			{Text: "Stay Open", Widget: stEntry},
+			{Text: "Stay Open", Widget: stoCheck},
+			{Text: "Open Label Color", Widget: oContent},
+			{Text: "Closed Label Color", Widget: cContent},
+			{Text: "Break Label Color", Widget: bContent},
 		},
 		OnSubmit: func() {
-			handler.SetDefaultTemplate(tName.Text)
+
+			s := settings.Settings{
+				DefaultTemplate: tName.Text,
+				StayOpen:        stoCheck.Checked,
+				OpenColor:       converter.ColorToInt(oColor),
+				ClosedColor:     converter.ColorToInt(cColor),
+				BreakColor:      converter.ColorToInt(bColor),
+				StandardHours:   [2]string{stEntry.Text, etEntry.Text},
+			}
+			s.SaveSettings()
+			handler.Update()
 
 		},
 	}
+}
+
+func SetColor(c color.Color,r *canvas.Rectangle) {
+	r.FillColor = c
 }

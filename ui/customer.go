@@ -2,6 +2,8 @@ package ui
 
 import (
 	"can-i-go-yet/src/handler"
+	"can-i-go-yet/src/settings"
+	"fmt"
 
 	"image/color"
 	"time"
@@ -15,7 +17,7 @@ import (
 )
 
 func CustomerView() {
-
+	set := settings.LoadSettings()
 	myWindow := fyne.CurrentApp().NewWindow("Customer View")
 	openLBL := canvas.NewText("", color.RGBA{R: 255, G: 0, B: 0, A: 255})
 	openLBL.TextSize = 150
@@ -25,16 +27,18 @@ func CustomerView() {
 	ctLBL.TextSize = 25
 	ctLBL.Alignment = fyne.TextAlignCenter
 
-	officeHoursLBL := canvas.NewText("Tech Office Daily Hours: 7:40 am - 2:40 pm", color.Black)
+	
+	dHours := fmt.Sprintf("Tech Office Daily Hours: %s - %s",set.StandardHours[0],set.StandardHours[1])
+	officeHoursLBL := canvas.NewText(dHours, color.Black)
 	officeHoursLBL.TextSize = 25
 	officeHoursLBL.TextStyle.Bold = true
 	officeHoursLBL.Alignment = fyne.TextAlignCenter
 
-	statusLBL := canvas.NewText("",color.Black)
+	statusLBL := canvas.NewText("", color.Black)
 	statusLBL.TextSize = 25
 	statusLBL.Alignment = fyne.TextAlignCenter
 
-	announcmentsLBL := canvas.NewText("Announcments:",color.Black)
+	announcmentsLBL := canvas.NewText("Announcments:", color.Black)
 	announcmentsLBL.TextSize = 25
 	announcmentsLBL.Alignment = fyne.TextAlignCenter
 
@@ -68,6 +72,9 @@ func CustomerView() {
 			updateOpen(openLBL)
 			updateStatus(statusLBL)
 			updateAnnouncments(announcmentsBODY)
+			set = settings.LoadSettings()
+			dHours := fmt.Sprintf("Tech Office Daily Hours: %s - %s",set.StandardHours[0],set.StandardHours[1])
+			officeHoursLBL.Text = dHours
 			content.Refresh()
 		}
 	}()

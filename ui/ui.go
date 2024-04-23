@@ -323,6 +323,7 @@ func TemplateForm(list *widget.List, b *binding.UntypedList) *widget.Form {
 			t = append(t, converter.DataItemToTemplate(item))
 		}
 		templater.AddTemplate(t)
+		tName.Text = ""
 	})
 	flags := widget.CheckGroup{
 		Horizontal: true,
@@ -429,6 +430,8 @@ func SettingsTab(w fyne.Window) *widget.Form {
 	etEntry := widget.NewEntry()
 	etEntry.SetPlaceHolder("2:30 pm")
 
+	dhContent := container.NewVBox(stEntry,etEntry)
+
 	return &widget.Form{
 		Items: []*widget.FormItem{ // we can specify items in the constructor
 			{Text: "Default Template", Widget: tName},
@@ -436,6 +439,7 @@ func SettingsTab(w fyne.Window) *widget.Form {
 			{Text: "Open Label Color", Widget: oContent},
 			{Text: "Closed Label Color", Widget: cContent},
 			{Text: "Break Label Color", Widget: bContent},
+			{Text: "Daily Hours",Widget: dhContent},
 		},
 		SubmitText: "Save",
 		OnSubmit: func() {

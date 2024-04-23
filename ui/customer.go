@@ -19,6 +19,7 @@ import (
 func CustomerView() {
 	set := settings.LoadSettings()
 	myWindow := fyne.CurrentApp().NewWindow("Customer View")
+	myWindow.SetFullScreen(true)
 	openLBL := canvas.NewText("", color.RGBA{R: 255, G: 0, B: 0, A: 255})
 	openLBL.TextSize = 150
 	openLBL.Alignment = fyne.TextAlignCenter

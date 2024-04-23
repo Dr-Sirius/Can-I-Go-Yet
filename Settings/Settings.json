@@ -1,10 +1,10 @@
 {
-	"DefaultTemplate": "Alpha",
+	"DefaultTemplate": "",
 	"StayOpen": false,
 	"OpenColor": [
-		0,
-		65535,
-		0,
+		257,
+		54741,
+		45746,
 		65535
 	],
 	"ClosedColor": [
@@ -20,7 +20,7 @@
 		65535
 	],
 	"StandarHours": [
-		"",
-		""
+		"7:30 am",
+		"2:30 pm"
 	]
 }

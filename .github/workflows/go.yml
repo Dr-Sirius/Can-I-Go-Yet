@@ -32,14 +32,16 @@ jobs:
       run: go mod verify
 
     - run: go build app/main.go
-    - name: Automatic Releases
-      # You may pin to the exact commit or the version.
-      # uses: marvinpinto/action-automatic-releases@919008cf3f741b179569b7a6fb4d8860689ab7f0
-      uses: marvinpinto/action-automatic-releases@v1.2.1
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@latest
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        # GitHub secret token
-        repo_token: ${{ github.token }}
-       
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
           
     
       

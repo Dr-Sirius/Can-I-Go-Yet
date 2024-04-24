@@ -105,11 +105,11 @@ Creates a *widget.Form for creating new schedule
 */
 func AddForm(data binding.UntypedList) *widget.Form {
 	dtEntry := widget.NewEntry()
-	dtEntry.SetPlaceHolder("2024-01-01")
+	dtEntry.SetText(time.Now().Format("2006-01-02"))
 	stEntry := widget.NewEntry()
-	stEntry.SetPlaceHolder("12:00 am")
+	stEntry.SetText("12:00 am")
 	etEntry := widget.NewEntry()
-	etEntry.SetPlaceHolder("12:00 pm")
+	etEntry.SetText("12:00 pm")
 	flags := widget.CheckGroup{
 		Horizontal: true,
 		Options: []string{
@@ -311,7 +311,7 @@ Creates *widget.Form for creating new template
 */
 func TemplateForm(list *widget.List, b *binding.UntypedList) *widget.Form {
 	tName := widget.NewEntry()
-	tName.SetPlaceHolder("Alpha")
+	
 	stEntry := widget.NewEntry()
 	stEntry.SetPlaceHolder("12:00 am")
 	etEntry := widget.NewEntry()

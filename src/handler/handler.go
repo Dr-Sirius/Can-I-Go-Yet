@@ -70,6 +70,8 @@ func CheckFlags() (string, color.Color) {
 			return setOnBreak()
 		}
 
+	} else if _, ok := flags[scheduler.UNDS]; ok{
+		return setOnBreak()
 	} else if _, ok := flags[scheduler.OPEN]; ok {
 		Status = "Open"
 		return setOpen()

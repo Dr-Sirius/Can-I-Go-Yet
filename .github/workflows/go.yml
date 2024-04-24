@@ -37,7 +37,7 @@ jobs:
     - name: GH Release
       uses: softprops/action-gh-release@v2.0.4
       with:
-        tag_name: 'v*'
+        tag_name: ${{ github.ref }}
         token: "${{ secrets.GITHUB_TOKEN }}"
         files: main
         

@@ -7,3 +7,5 @@
 /Templates
 *.csv
 *.json
+Schedules/Schedules.csv
+Settings/Settings.json

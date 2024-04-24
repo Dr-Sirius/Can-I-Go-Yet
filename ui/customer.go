@@ -19,6 +19,7 @@ import (
 func CustomerView() {
 	set := settings.LoadSettings()
 	myWindow := fyne.CurrentApp().NewWindow("Customer View")
+	myWindow.SetFullScreen(true)
 	openLBL := canvas.NewText("", color.RGBA{R: 255, G: 0, B: 0, A: 255})
 	openLBL.TextSize = 150
 	openLBL.Alignment = fyne.TextAlignCenter
@@ -47,11 +48,15 @@ func CustomerView() {
 	announcmentsBODY.TextStyle.Bold = true
 
 	logo := canvas.NewImageFromResource(resourceLogoPng)
+	logo.FillMode = canvas.ImageFillOriginal
 
 	content := container.New(
-		layout.NewAdaptiveGridLayout(2),
+		layout.NewHBoxLayout(),
+		layout.NewSpacer(),
 		logo,
+		layout.NewSpacer(),
 		container.New(
+
 			layout.NewVBoxLayout(),
 			openLBL,
 			canvas.NewLine(color.Black),
@@ -62,6 +67,7 @@ func CustomerView() {
 			announcmentsLBL,
 			announcmentsBODY,
 		),
+		layout.NewSpacer(),
 	)
 
 	myWindow.SetContent(content)

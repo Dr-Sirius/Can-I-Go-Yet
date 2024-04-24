@@ -1,26 +1,26 @@
 {
-	"DefaultTemplate": "Alpha",
-	"StayOpen": false,
+	"DefaultTemplate": "",
+	"StayOpen": true,
 	"OpenColor": [
 		0,
-		65535,
+		255,
 		0,
-		65535
+		255
 	],
 	"ClosedColor": [
-		65535,
+		255,
 		0,
 		0,
-		65535
+		255
 	],
 	"BreakColor": [
 		0,
 		0,
-		65535,
-		65535
+		255,
+		255
 	],
 	"StandarHours": [
-		"",
-		""
+		"7:45 am",
+		"2:30 pm"
 	]
 }

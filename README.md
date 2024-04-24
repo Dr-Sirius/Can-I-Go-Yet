@@ -13,7 +13,7 @@ fyne package --os {Your Operating System} --src app --icon ../Icon.png
 ```
 If you`re using linux you will need to unzip the tar.gz and run the make file
 
-If your want to simply create an executable file to run then run 
+If you want to simply create an executable file to run then run 
 ```
 fyne package --os {Your Operating System} --src app
 ```

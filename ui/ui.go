@@ -229,8 +229,25 @@ func TemplateTab(data binding.UntypedList) *fyne.Container {
 
 	}
 
-	addBTN := widget.NewButton("Add Template", func() {
+	addBTN := widget.NewButton("Add Template to Todays Schedule", func() {
 
+
+		for _, x := range templater.LoadTemplate(name) {
+			
+			scheduler.AddSchedule(dateENT.Text, x.Start_Time, x.End_Time, x.FlagsSlice()...)
+			data.Append(scheduler.NewSchedule(x.Start_Time,x.End_Time,dateENT.Text, x.FlagsSlice()...))
+			
+		}
+		
+		handler.SetTime()
+
+	})
+
+	replaceBTN := widget.NewButton("Replace Todays Schedule with Template", func() {
+
+		s := make([]interface{}, 0)
+		data.Set(s)
+		handler.RemoveAll()
 		for _, x := range templater.LoadTemplate(name) {
 			
 			scheduler.AddSchedule(dateENT.Text, x.Start_Time, x.End_Time, x.FlagsSlice()...)
@@ -255,11 +272,17 @@ func TemplateTab(data binding.UntypedList) *fyne.Container {
 		container.NewGridWithRows(
 			2,
 			dateENT,
-			addBTN,
+			container.NewHBox(
+				addBTN,
+				replaceBTN,
+			),
+			
 		),
 	)
 
 }
+
+
 
 
 /*
@@ -309,14 +332,14 @@ func TemplateList(t []templater.Template) *widget.List {
 /*
 Creates *widget.Form for creating new template
 */
-func TemplateForm(list *widget.List, b *binding.UntypedList) *widget.Form {
+func TemplateForm(list *widget.List, b *binding.UntypedList) *fyne.Container {
 	tName := widget.NewEntry()
 	
 	stEntry := widget.NewEntry()
 	stEntry.SetPlaceHolder("12:00 am")
 	etEntry := widget.NewEntry()
 	etEntry.SetPlaceHolder("12:00 pm")
-	saveBTN := widget.NewButton("Save", func() {
+	saveBTN := widget.NewButtonWithIcon("Save Template",theme.DocumentSaveIcon(),func() {
 		t := []templater.Template{}
 		for i := range (*b).Length() {
 			item, _ := (*b).GetItem(i)
@@ -334,15 +357,16 @@ func TemplateForm(list *widget.List, b *binding.UntypedList) *widget.Form {
 			"Holiday",
 		},
 	}
+	
 
-	return &widget.Form{
+	form := &widget.Form{
 		Items: []*widget.FormItem{ // we can specify items in the constructor
 			{Text: "Template Name", Widget: tName},
 			{Text: "Start Time", Widget: stEntry},
 			{Text: "End Time", Widget: etEntry},
 			{Text: "Flags", Widget: &flags},
-			{Widget: saveBTN},
 		},
+		SubmitText: "Add",
 		OnSubmit: func() {
 			(*b).Append(templater.NewTemplate(tName.Text, stEntry.Text, etEntry.Text, handler.CreateFlags(flags.Selected)...))
 
@@ -352,7 +376,24 @@ func TemplateForm(list *widget.List, b *binding.UntypedList) *widget.Form {
 			etEntry.Refresh()
 			list.Refresh()
 		},
+		OnCancel: func() {
+			s := make([]interface{}, 0)
+			(*b).Set(s)
+			stEntry.Text = ""
+			etEntry.Text = ""
+			tName.Text = ""
+			tName.Refresh()
+			stEntry.Refresh()
+			etEntry.Refresh()
+			list.Refresh()
+		},
 	}
+	content := container.NewVBox(
+		form,
+		saveBTN,
+		
+	)
+	return content
 }
 
 

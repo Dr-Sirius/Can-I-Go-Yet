@@ -21,30 +21,29 @@ func CustomerView() {
 	myWindow := fyne.CurrentApp().NewWindow("Customer View")
 	myWindow.SetFullScreen(set.FullscreenCustomerView)
 	openLBL := canvas.NewText("", color.RGBA{R: 255, G: 0, B: 0, A: 255})
-	openLBL.TextSize = 150
+	openLBL.TextSize = 200
 	openLBL.Alignment = fyne.TextAlignCenter
 
 	ctLBL := canvas.NewText("", color.Black)
-	ctLBL.TextSize = 25
+	ctLBL.TextSize = 50
 	ctLBL.Alignment = fyne.TextAlignCenter
 
 	
 	dHours := fmt.Sprintf("Tech Office Daily Hours: %s - %s",set.StandardHours[0],set.StandardHours[1])
 	officeHoursLBL := canvas.NewText(dHours, color.Black)
-	officeHoursLBL.TextSize = 25
+	officeHoursLBL.TextSize = 50
 	officeHoursLBL.TextStyle.Bold = true
 	officeHoursLBL.Alignment = fyne.TextAlignCenter
 
 	statusLBL := canvas.NewText("", color.Black)
-	statusLBL.TextSize = 25
+	statusLBL.TextSize = 50
 	statusLBL.Alignment = fyne.TextAlignCenter
 
 	announcmentsLBL := canvas.NewText("Announcments:", color.Black)
-	announcmentsLBL.TextSize = 25
+	announcmentsLBL.TextSize = 50
 	announcmentsLBL.Alignment = fyne.TextAlignCenter
 
 	announcmentsBODY := widget.NewMultiLineEntry()
-	announcmentsBODY.Text = "Bacon"
 	announcmentsBODY.TextStyle.Bold = true
 
 	logo := canvas.NewImageFromResource(resourceLogoPng)
@@ -52,9 +51,12 @@ func CustomerView() {
 
 	content := container.New(
 		layout.NewHBoxLayout(),
-		layout.NewSpacer(),
-		logo,
-		layout.NewSpacer(),
+		container.NewGridWithColumns(
+			2,
+			logo,
+			layout.NewSpacer(),
+		),
+		
 		container.New(
 
 			layout.NewVBoxLayout(),

@@ -6,7 +6,6 @@ import (
 	"can-i-go-yet/src/settings"
 	"fmt"
 	"image/color"
-	"log"
 	"os"
 	"time"
 
@@ -44,15 +43,21 @@ func CheckTime() (string, color.Color) {
 		goto stOpen
 
 	} else if checkSchedule() != -1 {
-		
+
 		return CheckFlags()
 	}
-	stOpen:
+stOpen:
 	if stayOpen {
-		log.Println("here")
+
 		Status = "Open"
 		return setOpen()
 	} else {
+		set := settings.LoadSettings()
+		dHours := scheduler.NewSchedule(set.StandardHours[0],set.StandardHours[1],time.Now().Format("2006-01-02"),0)
+		if dHours.StartTime.Equal(time.Now()) || (dHours.StartTime.Before(time.Now()) && dHours.EndTime.After(time.Now())) {
+			Status = "Open"
+			return setOpen()
+		}
 		Status = "Closed"
 		return setClosed()
 	}

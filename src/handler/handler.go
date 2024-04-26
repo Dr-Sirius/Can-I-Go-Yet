@@ -6,14 +6,15 @@ import (
 	"can-i-go-yet/src/settings"
 	"fmt"
 	"image/color"
+	"log"
 	"os"
 	"time"
 
 	"fyne.io/fyne/v2/container"
 )
 
-var sch []scheduler.Schedule 
-var stayOpen bool = settings.LoadSettings().StayOpen 
+var sch []scheduler.Schedule
+var stayOpen bool = settings.LoadSettings().StayOpen
 var Announcments string = ""
 var Status string = ""
 var defaultTemplate = settings.LoadSettings().DefaultTemplate
@@ -31,7 +32,7 @@ func SetTime() {
 	}
 	if len(sch) == 0 && GetDefaultTemplate() != "" {
 		sch = converter.TemplateToSchedule(GetDefaultTemplate(), time.Now().Format("2006-01-02"))
-	} 
+	}
 
 }
 
@@ -40,13 +41,15 @@ Checks and returns status of current schedule if there is one else returns statu
 */
 func CheckTime() (string, color.Color) {
 	if len(sch) == 0 {
-		Status = "Open"
-		return setOpen()
+		goto stOpen
 
-	} else if !GetCurrentSchedule().StartTime.Equal(time.Time{}) {
+	} else if checkSchedule() != -1 {
+		
 		return CheckFlags()
 	}
+	stOpen:
 	if stayOpen {
+		log.Println("here")
 		Status = "Open"
 		return setOpen()
 	} else {
@@ -70,7 +73,7 @@ func CheckFlags() (string, color.Color) {
 			return setOnBreak()
 		}
 
-	} else if _, ok := flags[scheduler.UNDS]; ok{
+	} else if _, ok := flags[scheduler.UNDS]; ok {
 		return setOnBreak()
 	} else if _, ok := flags[scheduler.OPEN]; ok {
 		Status = "Open"
@@ -87,7 +90,7 @@ Returns color.Color based on OpenColor settings in Settings.json
 */
 func setOpen() (string, color.Color) {
 	rgba := settings.LoadSettings().OpenColor
-	return "Open", color.RGBA{uint8(rgba[0]),uint8(rgba[1]),uint8(rgba[2]),uint8(rgba[3])}
+	return "Open", color.RGBA{uint8(rgba[0]), uint8(rgba[1]), uint8(rgba[2]), uint8(rgba[3])}
 }
 
 /*
@@ -95,7 +98,7 @@ Returns color.Color based on ClosedColor settings in Settings.json
 */
 func setClosed() (string, color.Color) {
 	rgba := settings.LoadSettings().ClosedColor
-	return "Closed", color.RGBA{uint8(rgba[0]),uint8(rgba[1]),uint8(rgba[2]),uint8(rgba[3])}
+	return "Closed", color.RGBA{uint8(rgba[0]), uint8(rgba[1]), uint8(rgba[2]), uint8(rgba[3])}
 }
 
 /*
@@ -103,7 +106,7 @@ Returns color.Color based on BreakColor settings in Settings.json
 */
 func setOnBreak() (string, color.Color) {
 	rgba := settings.LoadSettings().BreakColor
-	return "Open", color.RGBA{uint8(rgba[0]),uint8(rgba[1]),uint8(rgba[2]),uint8(rgba[3])}
+	return "Open", color.RGBA{uint8(rgba[0]), uint8(rgba[1]), uint8(rgba[2]), uint8(rgba[3])}
 }
 
 /*
@@ -142,7 +145,7 @@ Returns the next schedule from todays schedule based on current schedule and tim
 */
 func GetNextSchedule() scheduler.Schedule {
 	if checkNextSchedule() == -1 {
-		return scheduler.Schedule{}
+		return scheduler.Schedule{StartTime: GetCurrentSchedule().EndTime}
 	}
 	return sch[checkNextSchedule()]
 }
@@ -247,7 +250,7 @@ func CreateFlags(flags []string) []int {
 Returns sorted []*container.TabItem using bubble sort
 */
 func SortTabs(tabs []*container.TabItem) []*container.TabItem {
-	
+
 	for i := len(tabs) - 1; i >= 0; i -= 1 {
 
 		for x := range i {
@@ -262,7 +265,6 @@ func SortTabs(tabs []*container.TabItem) []*container.TabItem {
 	}
 	return tabs
 }
-
 
 func SetDefaultTemplate(name string) {
 	defaultTemplate = name

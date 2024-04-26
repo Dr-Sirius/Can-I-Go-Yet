@@ -132,6 +132,21 @@ func scheduleSort(Schedules ...Schedule) []Schedule {
 
 		}
 	}
+	return scheduleFlagSort(Schedules...)
+}
+
+func scheduleFlagSort(Schedules ...Schedule) []Schedule {
+	for i := len(Schedules) - 1; i >= 0; i -= 1 {
+
+		for x := range i {
+			if Schedules[x].FlagsSlice()[0] > Schedules[x+1].FlagsSlice()[0]{
+				temp := Schedules[x]
+				Schedules[x] = Schedules[x+1]
+				Schedules[x+1] = temp
+			}
+
+		}
+	}
 	return Schedules
 }
 /*

@@ -191,7 +191,7 @@ Returns int slice containg all flags in template t
 */
 func (t Template) FlagsSlice() []int {
 	x := []int{}
-	for a, _ := range t.Flags {
+	for a := range t.Flags {
 		x = append(x, a)
 	}
 	slices.Sort(x)

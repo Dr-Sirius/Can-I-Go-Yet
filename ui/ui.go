@@ -455,10 +455,10 @@ func SettingsTab(w fyne.Window) *widget.Form {
 	bContent := container.NewGridWithColumns(2, bkRect, bkBTN)
 
 	stEntry := widget.NewEntry()
-	stEntry.SetPlaceHolder("7:30 am")
+	stEntry.SetText(settings.LoadSettings().StandardHours[0])
 
 	etEntry := widget.NewEntry()
-	etEntry.SetPlaceHolder("2:30 pm")
+	etEntry.SetText(settings.LoadSettings().StandardHours[1])
 
 	dhContent := container.NewVBox(stEntry, etEntry)
 

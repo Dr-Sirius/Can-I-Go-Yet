@@ -51,23 +51,25 @@ func CustomerView() {
 
 	content := container.New(
 		layout.NewHBoxLayout(),
-		container.NewGridWithColumns(
-			2,
-			logo,
-			layout.NewSpacer(),
-		),
+		layout.NewSpacer(),
+		logo,
+		layout.NewSpacer(),
+
 		
 		container.New(
 
-			layout.NewVBoxLayout(),
-			openLBL,
-			canvas.NewLine(color.Black),
-			ctLBL,
-			officeHoursLBL,
-			canvas.NewLine(color.Black),
-			statusLBL,
-			announcmentsLBL,
-			announcmentsBODY,
+			layout.NewCenterLayout(),
+			container.NewVBox(
+				openLBL,
+				canvas.NewLine(color.Black),
+				ctLBL,
+				officeHoursLBL,
+				canvas.NewLine(color.Black),
+				statusLBL,
+				announcmentsLBL,
+				announcmentsBODY,
+			),
+			
 		),
 		layout.NewSpacer(),
 	)

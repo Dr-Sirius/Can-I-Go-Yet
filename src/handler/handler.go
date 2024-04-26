@@ -74,7 +74,7 @@ func CheckFlags() (string, color.Color) {
 		}
 
 	} else if _, ok := flags[scheduler.UNDS]; ok {
-		return setOnBreak()
+		return setUnderStaffed()
 	} else if _, ok := flags[scheduler.OPEN]; ok {
 		Status = "Open"
 		return setOpen()
@@ -107,6 +107,11 @@ Returns color.Color based on BreakColor settings in Settings.json
 func setOnBreak() (string, color.Color) {
 	rgba := settings.LoadSettings().BreakColor
 	return "Open", color.RGBA{uint8(rgba[0]), uint8(rgba[1]), uint8(rgba[2]), uint8(rgba[3])}
+}
+
+func setUnderStaffed() (string, color.Color) {
+	rgba := settings.LoadSettings().BreakColor
+	return "Open/Understaffed", color.RGBA{uint8(rgba[0]), uint8(rgba[1]), uint8(rgba[2]), uint8(rgba[3])}
 }
 
 /*

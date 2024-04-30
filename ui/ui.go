@@ -45,8 +45,6 @@ func Run() {
 	)
 
 	myWindow.SetContent(content)
-	myWindow.Resize(fyne.NewSize(200, 200))
-	//myWindow.SetFixedSize(true)
 	myWindow.ShowAndRun()
 
 }
@@ -117,6 +115,7 @@ func AddForm(data binding.UntypedList) *widget.Form {
 			"Break",
 			"Understaffed",
 			"Holiday",
+			"Closed",
 		},
 	}
 	return &widget.Form{

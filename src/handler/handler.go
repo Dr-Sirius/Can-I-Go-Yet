@@ -70,7 +70,7 @@ Checks and returns status of current schedule based on its flags
 */
 func CheckFlags() (string, color.Color) {
 	flags := GetCurrentSchedule().Flags
-	log.Println(flags)
+
 	if _, ok := flags[scheduler.BRKE]; ok {
 		if _, ok := flags[scheduler.UNDS]; ok {
 			Status = "Closed"

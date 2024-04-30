@@ -166,6 +166,9 @@ func (s Schedule) PrettyString() string {
 	et := s.StringEndTime()
 	f := func() string {
 		str := ""
+		if _,ok := s.Flags[-1]; ok {
+			return "|Closed"
+		}
 		for i := range s.Flags {
 			if i == OPEN {
 				str += "|Open"
@@ -179,6 +182,7 @@ func (s Schedule) PrettyString() string {
 			if i == HDAY {
 				str += "|Holiday"
 			}
+			
 		}
 		return str
 	}

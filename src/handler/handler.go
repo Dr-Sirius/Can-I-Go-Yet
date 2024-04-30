@@ -6,6 +6,7 @@ import (
 	"can-i-go-yet/src/settings"
 	"fmt"
 	"image/color"
+	"log"
 	"os"
 	"time"
 
@@ -53,7 +54,7 @@ stOpen:
 		return setOpen()
 	} else {
 		set := settings.LoadSettings()
-		dHours := scheduler.NewSchedule(set.StandardHours[0],set.StandardHours[1],time.Now().Format("2006-01-02"),0)
+		dHours := scheduler.NewSchedule(set.StandardHours[0], set.StandardHours[1], time.Now().Format("2006-01-02"), 0)
 		if dHours.StartTime.Equal(time.Now()) || (dHours.StartTime.Before(time.Now()) && dHours.EndTime.After(time.Now())) {
 			Status = "Open"
 			return setOpen()
@@ -69,6 +70,7 @@ Checks and returns status of current schedule based on its flags
 */
 func CheckFlags() (string, color.Color) {
 	flags := GetCurrentSchedule().Flags
+	log.Println(flags)
 	if _, ok := flags[scheduler.BRKE]; ok {
 		if _, ok := flags[scheduler.UNDS]; ok {
 			Status = "Closed"
@@ -81,9 +83,14 @@ func CheckFlags() (string, color.Color) {
 	} else if _, ok := flags[scheduler.UNDS]; ok {
 		return setUnderStaffed()
 	} else if _, ok := flags[scheduler.OPEN]; ok {
+		if _, ok := flags[-1]; ok {
+			Status = "Closed"
+			return setClosed()
+		}
 		Status = "Open"
 		return setOpen()
 	} else {
+		log.Println("closed")
 		Status = "Closed"
 		return setClosed()
 	}
@@ -239,6 +246,9 @@ Ex. []string{"Open","Understaffed","Break"} -> []int{0,2,1}
 */
 func CreateFlags(flags []string) []int {
 	f := []int{}
+	if len(f) == 0 {
+		return []int{-1}
+	}
 	for _, x := range flags {
 		if x == "Open" {
 			f = append(f, scheduler.OPEN)
@@ -253,6 +263,7 @@ func CreateFlags(flags []string) []int {
 			f = append(f, scheduler.HDAY)
 		}
 	}
+	log.Println(f)
 	return f
 }
 

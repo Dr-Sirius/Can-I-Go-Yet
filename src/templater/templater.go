@@ -168,6 +168,9 @@ func (t Template) PrettyString() string {
 	f := func() string {
 		str := ""
 		for i := range t.Flags {
+			if _,ok := t.Flags[-1]; ok {
+				return "|Closed"
+			}
 			if i == scheduler.OPEN {
 				str += "|Open"
 			}

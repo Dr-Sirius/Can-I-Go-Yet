@@ -11,25 +11,26 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
-
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/widget"
 )
+
+var previousAnouncment string = handler.Announcments
 
 func CustomerView() {
 	set := settings.LoadSettings()
 	myWindow := fyne.CurrentApp().NewWindow("Customer View")
-	myWindow.SetFullScreen(set.FullscreenCustomerView)
+	//myWindow.SetFullScreen(set.FullscreenCustomerView)
+
 	openLBL := canvas.NewText("", color.RGBA{R: 255, G: 0, B: 0, A: 255})
-	openLBL.TextSize = 200
+	openLBL.TextSize = 150
 	openLBL.Alignment = fyne.TextAlignCenter
 
 	ctLBL := canvas.NewText("", color.Black)
 	ctLBL.TextSize = 50
 	ctLBL.Alignment = fyne.TextAlignCenter
 
-	
-	dHours := fmt.Sprintf("Tech Office Daily Hours: %s - %s",set.StandardHours[0],set.StandardHours[1])
+	dHours := fmt.Sprintf("Tech Office Daily Hours: %s - %s", set.StandardHours[0], set.StandardHours[1])
 	officeHoursLBL := canvas.NewText(dHours, color.Black)
 	officeHoursLBL.TextSize = 50
 	officeHoursLBL.TextStyle.Bold = true
@@ -39,39 +40,38 @@ func CustomerView() {
 	statusLBL.TextSize = 50
 	statusLBL.Alignment = fyne.TextAlignCenter
 
-	announcmentsLBL := canvas.NewText("Announcments:", color.Black)
-	announcmentsLBL.TextSize = 50
-	announcmentsLBL.Alignment = fyne.TextAlignCenter
+	// announcmentsLBL := canvas.NewText("Announcments:", color.Black)
+	// announcmentsLBL.TextSize = 50
+	// announcmentsLBL.Alignment = fyne.TextAlignCenter
 
-	announcmentsBODY := widget.NewMultiLineEntry()
+	announcmentsBODY := canvas.NewText("", color.Black)
+	announcmentsBODY.TextSize = 25
 	announcmentsBODY.TextStyle.Bold = true
+	announcmentsBODY.Alignment = fyne.TextAlignCenter
 
 	logo := canvas.NewImageFromResource(resourceLogoPng)
 	logo.FillMode = canvas.ImageFillOriginal
 
-	content := container.New(
-		layout.NewHBoxLayout(),
-		layout.NewSpacer(),
-		logo,
-		layout.NewSpacer(),
-
-		
-		container.New(
-
-			layout.NewCenterLayout(),
-			container.NewVBox(
-				openLBL,
-				canvas.NewLine(color.Black),
-				ctLBL,
-				officeHoursLBL,
-				canvas.NewLine(color.Black),
-				statusLBL,
-				announcmentsLBL,
-				announcmentsBODY,
-			),
-			
+	content := container.NewVBox(
+		container.NewHBox(
+			layout.NewSpacer(),
+			logo,
+			layout.NewSpacer(),
+			openLBL,
+			layout.NewSpacer(),
 		),
-		layout.NewSpacer(),
+
+		widget.NewSeparator(),
+
+		container.NewHBox(
+			ctLBL,
+			widget.NewSeparator(),
+			announcmentsBODY,
+		),
+
+		widget.NewSeparator(),
+
+		statusLBL,
 	)
 
 	myWindow.SetContent(content)
@@ -83,7 +83,7 @@ func CustomerView() {
 			updateStatus(statusLBL)
 			updateAnnouncments(announcmentsBODY)
 			set = settings.LoadSettings()
-			dHours := fmt.Sprintf("Tech Office Daily Hours: %s - %s",set.StandardHours[0],set.StandardHours[1])
+			dHours := fmt.Sprintf("Tech Office Daily Hours: %s - %s", set.StandardHours[0], set.StandardHours[1])
 			officeHoursLBL.Text = dHours
 			content.Refresh()
 		}
@@ -94,7 +94,7 @@ func CustomerView() {
 }
 
 func updateClock(clock *canvas.Text) {
-	currentTime := time.Now().Format("Current Time: 03:04:05 pm")
+	currentTime := time.Now().Format("03:04:05 pm")
 	clock.Text = currentTime
 	clock.Refresh()
 }
@@ -107,7 +107,7 @@ func updateOpen(open *canvas.Text) {
 
 func updateStatus(status *canvas.Text) {
 	if handler.Status == "Closed" {
-		status.Text = "The Tech Office will reopen at " + handler.GetReturnTime()
+		status.Text = "Will reopen at " + handler.GetReturnTime()
 		return
 	}
 	if handler.Status == "Break" {
@@ -117,6 +117,13 @@ func updateStatus(status *canvas.Text) {
 	status.Text = ""
 }
 
-func updateAnnouncments(anc *widget.Entry) {
+func updateAnnouncments(anc *canvas.Text) {
+	if previousAnouncment != handler.Announcments {
+		anc.TextSize -= float32(len(anc.Text))
+		previousAnouncment = handler.Announcments
+	}
 	anc.Text = handler.Announcments
+	if len(anc.Text) == 0 {
+		anc.TextSize = 50
+	}
 }

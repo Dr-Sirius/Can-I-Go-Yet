@@ -375,7 +375,17 @@ func TemplateForm(list *widget.List, b *binding.UntypedList, win fyne.Window) *f
 			t = append(t, converter.DataItemToTemplate(item))
 		}
 		templater.AddTemplate(t)
+		tName.Enable()
+		s := make([]interface{}, 0)
+		(*b).Set(s)
+		stEntry.Text = "12:00 am"
+		etEntry.Text = "12:00 pm"
 		tName.Text = ""
+		tName.Refresh()
+		stEntry.Refresh()
+		etEntry.Refresh()
+		list.Refresh()
+		
 	})
 	flags := widget.CheckGroup{
 		Horizontal: true,
@@ -405,6 +415,7 @@ func TemplateForm(list *widget.List, b *binding.UntypedList, win fyne.Window) *f
 				
 				
 			}
+			tName.Disable()
 			(*b).Append(templater.NewTemplate(tName.Text, stEntry.Text, etEntry.Text, handler.CreateFlags(flags.Selected)...))
 
 			stEntry.Text = ""
@@ -414,10 +425,11 @@ func TemplateForm(list *widget.List, b *binding.UntypedList, win fyne.Window) *f
 			list.Refresh()
 		},
 		OnCancel: func() {
+			tName.Enable()
 			s := make([]interface{}, 0)
 			(*b).Set(s)
-			stEntry.Text = ""
-			etEntry.Text = ""
+			stEntry.Text = "12:00 am"
+			etEntry.Text = "12:00 pm"
 			tName.Text = ""
 			tName.Refresh()
 			stEntry.Refresh()

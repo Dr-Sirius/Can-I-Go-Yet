@@ -243,7 +243,33 @@ func TemplateTab(data binding.UntypedList,win fyne.Window) *fyne.Container {
 	}
 
 	tabs.OnClosed = func(ti *container.TabItem) {
+		s := settings.LoadSettings()
+		
+		if s.ShowDeleteConfirmation {
+			w := widget.NewCheck("Do not show again",func(b bool) {
+				if b {
+					s.ShowDeleteConfirmation = false
+					s.SaveSettings()
+
+				}
+			})
+			
+			dialog.NewCustomConfirm(
+				"This action will delete the selected template\nDo you wish to continue with this action?",
+				"Yes",
+				"No",
+				w,func(b bool) {if b {templater.RemoveTemplate(ti.Text)}},
+				win,
+				).Show()
+			return
+			
+			
+		
+		}
 		templater.RemoveTemplate(ti.Text)
+		
+		
+		
 
 	}
 
@@ -522,6 +548,11 @@ func SettingsTab(w fyne.Window) *widget.Form {
 	fsCheck := widget.NewCheck("", func(b bool) {})
 	fsCheck.SetChecked(settings.LoadSettings().FullscreenCustomerView)
 
+	dnsaCheck := widget.NewCheck("", func(b bool) {})
+	dnsaCheck.SetChecked(settings.LoadSettings().ShowDeleteConfirmation)
+
+	
+
 	return &widget.Form{
 		Items: []*widget.FormItem{ // we can specify items in the constructor
 			{Text: "Default Template", Widget: tName},
@@ -531,6 +562,7 @@ func SettingsTab(w fyne.Window) *widget.Form {
 			{Text: "Break Label Color", Widget: bContent},
 			{Text: "Daily Hours", Widget: dhContent},
 			{Text: "Fullscreen Customer View", Widget: fsCheck},
+			{Text: "Show delete confirmation", Widget: dnsaCheck},
 		},
 		SubmitText: "Save",
 		OnSubmit: func() {
@@ -543,6 +575,7 @@ func SettingsTab(w fyne.Window) *widget.Form {
 				BreakColor:             converter.ColorToInt(bColor),
 				StandardHours:          [2]string{stEntry.Text, etEntry.Text},
 				FullscreenCustomerView: fsCheck.Checked,
+				ShowDeleteConfirmation: dnsaCheck.Checked,
 			}
 			s.SaveSettings()
 			handler.Update()

@@ -18,74 +18,19 @@ import (
 var previousAnouncment string = handler.Announcments
 
 func CustomerView() {
-	set := settings.LoadSettings()
+	
 	myWindow := fyne.CurrentApp().NewWindow("Customer View")
-	//myWindow.SetFullScreen(set.FullscreenCustomerView)
+	myWindow.SetFullScreen(settings.LoadSettings().FullscreenCustomerView)
 
-	openLBL := canvas.NewText("", color.RGBA{R: 255, G: 0, B: 0, A: 255})
-	openLBL.TextSize = 150
-	openLBL.Alignment = fyne.TextAlignCenter
 
-	ctLBL := canvas.NewText("", color.Black)
-	ctLBL.TextSize = 50
-	ctLBL.Alignment = fyne.TextAlignCenter
-
-	dHours := fmt.Sprintf("Tech Office Daily Hours: %s - %s", set.StandardHours[0], set.StandardHours[1])
-	officeHoursLBL := canvas.NewText(dHours, color.Black)
-	officeHoursLBL.TextSize = 50
-	officeHoursLBL.TextStyle.Bold = true
-	officeHoursLBL.Alignment = fyne.TextAlignCenter
-
-	statusLBL := canvas.NewText("", color.Black)
-	statusLBL.TextSize = 50
-	statusLBL.Alignment = fyne.TextAlignCenter
-
-	// announcmentsLBL := canvas.NewText("Announcments:", color.Black)
-	// announcmentsLBL.TextSize = 50
-	// announcmentsLBL.Alignment = fyne.TextAlignCenter
-
-	announcmentsBODY := canvas.NewText("", color.Black)
-	announcmentsBODY.TextSize = 25
-	announcmentsBODY.TextStyle.Bold = true
-	announcmentsBODY.Alignment = fyne.TextAlignCenter
-
-	logo := canvas.NewImageFromResource(resourceLogoPng)
-	logo.FillMode = canvas.ImageFillOriginal
-
-	content := container.NewVBox(
-		container.NewHBox(
-			layout.NewSpacer(),
-			logo,
-			layout.NewSpacer(),
-			openLBL,
-			layout.NewSpacer(),
-		),
-
-		widget.NewSeparator(),
-
-		container.NewHBox(
-			ctLBL,
-			widget.NewSeparator(),
-			announcmentsBODY,
-		),
-
-		widget.NewSeparator(),
-
-		statusLBL,
-	)
-
-	myWindow.SetContent(content)
+	
 	go func() {
-		updateClock(ctLBL)
+		
 		for range time.Tick(time.Second) {
-			updateClock(ctLBL)
-			updateOpen(openLBL)
-			updateStatus(statusLBL)
-			updateAnnouncments(announcmentsBODY)
-			set = settings.LoadSettings()
-			dHours := fmt.Sprintf("Tech Office Daily Hours: %s - %s", set.StandardHours[0], set.StandardHours[1])
-			officeHoursLBL.Text = dHours
-			content.Refresh()
+			myWindow.SetFullScreen(settings.LoadSettings().FullscreenCustomerView)
+			myWindow.SetContent(CustomerContent())
+			myWindow.Content().Refresh()
+			
 		}
 	}()
 	myWindow.Resize(fyne.NewSize(800, 600))
@@ -126,4 +71,96 @@ func updateAnnouncments(anc *canvas.Text) {
 	if len(anc.Text) == 0 {
 		anc.TextSize = 50
 	}
+}
+
+
+func CustomerContent() *fyne.Container {
+
+	set := settings.LoadSettings()
+	openLBL := canvas.NewText("", color.RGBA{R: 255, G: 0, B: 0, A: 255})
+	openLBL.TextSize = 150
+	openLBL.Alignment = fyne.TextAlignCenter
+	openLBL.TextStyle.Bold = true
+
+	ctLBL := canvas.NewText("", color.Black)
+	ctLBL.TextSize = 70
+	ctLBL.Alignment = fyne.TextAlignCenter
+
+	dHours := fmt.Sprintf("Tech Office Daily Hours: %s - %s", set.StandardHours[0], set.StandardHours[1])
+	officeHoursLBL := canvas.NewText(dHours, color.Black)
+	officeHoursLBL.TextSize = 50
+	officeHoursLBL.TextStyle.Bold = true
+	officeHoursLBL.Alignment = fyne.TextAlignCenter
+
+	statusLBL := canvas.NewText("", color.Black)
+	statusLBL.TextSize = 70
+	statusLBL.Alignment = fyne.TextAlignCenter
+
+	// announcmentsLBL := canvas.NewText("Announcments:", color.Black)
+	// announcmentsLBL.TextSize = 50
+	// announcmentsLBL.Alignment = fyne.TextAlignCenter
+
+	announcmentsBODY := canvas.NewText("", color.Black)
+	announcmentsBODY.TextSize = 25
+	announcmentsBODY.TextStyle.Bold = true
+	//announcmentsBODY.Alignment = fyne.TextAlignCenter
+
+	logo := canvas.NewImageFromResource(resourceLogoPng)
+	logo.FillMode = canvas.ImageFillOriginal
+
+
+	updateAnnouncments(announcmentsBODY)
+	updateClock(ctLBL)
+	updateOpen(openLBL)
+	updateStatus(statusLBL)
+
+	if announcmentsBODY.Text == "" {
+		ctLBL.TextSize = 80
+		statusLBL.TextSize = 80
+		return container.NewVBox(
+			container.NewHBox(
+				layout.NewSpacer(),
+				logo,
+				layout.NewSpacer(),
+				openLBL,
+				layout.NewSpacer(),
+			),
+	
+			widget.NewSeparator(),
+	
+			container.NewHBox(
+				layout.NewSpacer(),
+				ctLBL,
+				layout.NewSpacer(),
+			),
+			
+			widget.NewSeparator(),
+	
+			statusLBL,
+		)
+	}
+
+	return container.NewVBox(
+		container.NewHBox(
+			layout.NewSpacer(),
+			logo,
+			layout.NewSpacer(),
+			openLBL,
+			layout.NewSpacer(),
+		),
+
+		widget.NewSeparator(),
+
+		container.NewHBox(
+			
+			ctLBL,
+			widget.NewSeparator(),
+			layout.NewSpacer(),
+			announcmentsBODY,
+			layout.NewSpacer(),
+		),
+		widget.NewSeparator(),
+
+		statusLBL,
+	)
 }

@@ -210,7 +210,7 @@ func Remove(data binding.UntypedList, win fyne.Window) *fyne.Container {
 Creates *widget.Form for adding anouncment to customer view
 */
 func Announcments() *widget.Form {
-	anc := widget.NewMultiLineEntry()
+	anc := widget.NewEntry()
 
 	return &widget.Form{
 		Items: []*widget.FormItem{ // we can specify items in the constructor

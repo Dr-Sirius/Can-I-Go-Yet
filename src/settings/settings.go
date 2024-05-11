@@ -16,6 +16,7 @@ type Settings struct {
 	BreakColor             [4]int    `json:"BreakColor"`
 	StandardHours          [2]string `json:"StandarHours"`
 	FullscreenCustomerView bool      `json:"FullscreenCustomerView"`
+	ShowDeleteConfirmation bool      `json:"ShowDeleteConfirmation"`
 }
 
 func LoadSettings() Settings {
@@ -53,6 +54,7 @@ func CreateSettings() {
 		BreakColor:      [4]int{0, 0, 255, 255},
 		StandardHours:   [2]string{"7:45 am", "2:30 pm"},
 		FullscreenCustomerView: false,
+		ShowDeleteConfirmation: true,
 	}
 	ms, err := json.MarshalIndent(s, "", "	")
 	if err != nil {

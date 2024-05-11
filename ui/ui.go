@@ -6,6 +6,7 @@ import (
 	"can-i-go-yet/src/scheduler"
 	"can-i-go-yet/src/settings"
 	"can-i-go-yet/src/templater"
+	"errors"
 
 	"image/color"
 	"time"
@@ -37,10 +38,10 @@ func Run() {
 	content := container.NewAppTabs(
 		container.NewTabItem("Today", TodayTab(b)),
 		container.NewTabItem("Announcments", Announcments()),
-		container.NewTabItem("Add Schedule", AddForm(b)),
-		container.NewTabItem("Remove Schedule", Remove(b)),
-		container.NewTabItem("Templates", TemplateTab(b)),
-		container.NewTabItem("Build Template", BuildTemplatTab()),
+		container.NewTabItem("Add Schedule", AddForm(b,myWindow)),
+		container.NewTabItem("Remove Schedule", Remove(b,myWindow)),
+		container.NewTabItem("Templates", TemplateTab(b,myWindow)),
+		container.NewTabItem("Build Template", BuildTemplatTab(myWindow)),
 		container.NewTabItem("Settings", SettingsTab(myWindow)),
 	)
 
@@ -101,7 +102,7 @@ func TodayTab(data binding.UntypedList) *fyne.Container {
 /*
 Creates a *widget.Form for creating new schedule
 */
-func AddForm(data binding.UntypedList) *widget.Form {
+func AddForm(data binding.UntypedList, win fyne.Window) *widget.Form {
 	dtEntry := widget.NewEntry()
 	dtEntry.SetText(time.Now().Format("2006-01-02"))
 	stEntry := widget.NewEntry()
@@ -126,6 +127,15 @@ func AddForm(data binding.UntypedList) *widget.Form {
 			{Text: "Flags", Widget: &flags},
 		},
 		OnSubmit: func() {
+			if dtEntry.Text == "" || stEntry.Text == "" || etEntry.Text == "" {
+				
+			
+				dialog.NewError(errors.New("the entries cannot be left blank"),win).Show()
+	
+				return 
+				
+				
+			}
 			s := scheduler.NewSchedule(stEntry.Text, etEntry.Text, dtEntry.Text, handler.CreateFlags(flags.Selected)...)
 			scheduler.AddSchedule(dtEntry.Text, stEntry.Text, etEntry.Text, handler.CreateFlags(flags.Selected)...)
 			data.Append(s)
@@ -139,15 +149,17 @@ func AddForm(data binding.UntypedList) *widget.Form {
 /*
 Creates *fyne.Container for removing schedules on todays date
 */
-func Remove(data binding.UntypedList) *fyne.Container {
+func Remove(data binding.UntypedList, win fyne.Window) *fyne.Container {
 	selected := -1
 	lbl := canvas.NewText("", color.Black)
 	rl := TodayList(data)
 	removeBTN := widget.NewButton("Remove", func() {
 		if selected == -1 {
-			lbl.Text = "You need to select a schedule first!"
-			lbl.Refresh()
-			return
+			
+			dialog.NewError(errors.New("there are no schedules selected"),win).Show()
+
+			return 
+			
 		}
 
 		handler.Remove(selected)
@@ -161,6 +173,13 @@ func Remove(data binding.UntypedList) *fyne.Container {
 	})
 
 	removeAllBTN := widget.NewButton("Remove All", func() {
+		if len(scheduler.LoadSchedules()) == 0 {
+			
+			dialog.NewError(errors.New("there are no schedules\n\n you can create new schedules in the Add Schedule tab"),win).Show()
+
+			return 
+			
+		}
 		handler.RemoveAll()
 		s := make([]interface{}, 0)
 		data.Set(s)
@@ -191,7 +210,7 @@ func Remove(data binding.UntypedList) *fyne.Container {
 Creates *widget.Form for adding anouncment to customer view
 */
 func Announcments() *widget.Form {
-	anc := widget.NewMultiLineEntry()
+	anc := widget.NewEntry()
 
 	return &widget.Form{
 		Items: []*widget.FormItem{ // we can specify items in the constructor
@@ -208,7 +227,7 @@ func Announcments() *widget.Form {
 /*
 Creates *fyne.Container for viewing templates and adding them to todays schedule
 */
-func TemplateTab(data binding.UntypedList) *fyne.Container {
+func TemplateTab(data binding.UntypedList,win fyne.Window) *fyne.Container {
 	todayLBL := canvas.NewText("Templates", color.Black)
 	todayLBL.TextSize = 35
 	tabs := container.NewDocTabs(TemplateTabs()...)
@@ -224,12 +243,47 @@ func TemplateTab(data binding.UntypedList) *fyne.Container {
 	}
 
 	tabs.OnClosed = func(ti *container.TabItem) {
+		s := settings.LoadSettings()
+		
+		if s.ShowDeleteConfirmation {
+			w := widget.NewCheck("Do not show again",func(b bool) {
+				if b {
+					s.ShowDeleteConfirmation = false
+					s.SaveSettings()
+
+				}
+			})
+			
+			dialog.NewCustomConfirm(
+				"This action will delete the selected template\nDo you wish to continue with this action?",
+				"Yes",
+				"No",
+				w,func(b bool) {if b {templater.RemoveTemplate(ti.Text)}},
+				win,
+				).Show()
+			return
+			
+			
+		
+		}
 		templater.RemoveTemplate(ti.Text)
+		
+		
+		
 
 	}
 
 	addBTN := widget.NewButton("Add Template to Todays Schedule", func() {
+		if len(templater.GetAllTemplates()) == 0 {
+			dialog.NewError(errors.New("there are no templates\n\n you can create a new template in the Build Template tab"),win).Show()
 
+			return 
+		}
+		if name == "" {
+			dialog.NewError(errors.New("there are no templates currently selected"),win).Show()
+
+			return 
+		}
 		for _, x := range templater.LoadTemplate(name) {
 
 			scheduler.AddSchedule(dateENT.Text, x.Start_Time, x.End_Time, x.FlagsSlice()...)
@@ -242,7 +296,16 @@ func TemplateTab(data binding.UntypedList) *fyne.Container {
 	})
 
 	replaceBTN := widget.NewButton("Replace Todays Schedule with Template", func() {
+		if len(templater.GetAllTemplates()) == 0 {
+			dialog.NewError(errors.New("there are no templates\n\n you can create a new template in the Build Template tab"),win).Show()
 
+			return 
+		}
+		if name == "" {
+			dialog.NewError(errors.New("there are no templates currently selected"),win).Show()
+
+			return 
+		}
 		s := make([]interface{}, 0)
 		data.Set(s)
 		handler.RemoveAll()
@@ -324,13 +387,13 @@ func TemplateList(t []templater.Template) *widget.List {
 /*
 Creates *widget.Form for creating new template
 */
-func TemplateForm(list *widget.List, b *binding.UntypedList) *fyne.Container {
+func TemplateForm(list *widget.List, b *binding.UntypedList, win fyne.Window) *fyne.Container {
 	tName := widget.NewEntry()
 
 	stEntry := widget.NewEntry()
-	stEntry.SetPlaceHolder("12:00 am")
+	stEntry.SetText("12:00 am")
 	etEntry := widget.NewEntry()
-	etEntry.SetPlaceHolder("12:00 pm")
+	etEntry.SetText("12:00 pm")
 	saveBTN := widget.NewButtonWithIcon("Save Template", theme.DocumentSaveIcon(), func() {
 		t := []templater.Template{}
 		for i := range (*b).Length() {
@@ -338,7 +401,17 @@ func TemplateForm(list *widget.List, b *binding.UntypedList) *fyne.Container {
 			t = append(t, converter.DataItemToTemplate(item))
 		}
 		templater.AddTemplate(t)
+		tName.Enable()
+		s := make([]interface{}, 0)
+		(*b).Set(s)
+		stEntry.Text = "12:00 am"
+		etEntry.Text = "12:00 pm"
 		tName.Text = ""
+		tName.Refresh()
+		stEntry.Refresh()
+		etEntry.Refresh()
+		list.Refresh()
+		
 	})
 	flags := widget.CheckGroup{
 		Horizontal: true,
@@ -359,6 +432,16 @@ func TemplateForm(list *widget.List, b *binding.UntypedList) *fyne.Container {
 		},
 		SubmitText: "Add",
 		OnSubmit: func() {
+			if tName.Text == "" || stEntry.Text == "" || etEntry.Text == "" {
+				
+			
+				dialog.NewError(errors.New("the entries cannot be left blank"),win).Show()
+	
+				return 
+				
+				
+			}
+			tName.Disable()
 			(*b).Append(templater.NewTemplate(tName.Text, stEntry.Text, etEntry.Text, handler.CreateFlags(flags.Selected)...))
 
 			stEntry.Text = ""
@@ -368,10 +451,11 @@ func TemplateForm(list *widget.List, b *binding.UntypedList) *fyne.Container {
 			list.Refresh()
 		},
 		OnCancel: func() {
+			tName.Enable()
 			s := make([]interface{}, 0)
 			(*b).Set(s)
-			stEntry.Text = ""
-			etEntry.Text = ""
+			stEntry.Text = "12:00 am"
+			etEntry.Text = "12:00 pm"
 			tName.Text = ""
 			tName.Refresh()
 			stEntry.Refresh()
@@ -407,7 +491,7 @@ func BuildTemplateList(data binding.UntypedList) *widget.List {
 /*
 Creates *container.Split for building new templates
 */
-func BuildTemplatTab() *container.Split {
+func BuildTemplatTab(win fyne.Window) *container.Split {
 
 	b := binding.NewUntypedList()
 
@@ -415,7 +499,7 @@ func BuildTemplatTab() *container.Split {
 
 	content := container.NewVSplit(
 		ls,
-		TemplateForm(ls, &b),
+		TemplateForm(ls, &b,win),
 	)
 
 	return content
@@ -464,6 +548,11 @@ func SettingsTab(w fyne.Window) *widget.Form {
 	fsCheck := widget.NewCheck("", func(b bool) {})
 	fsCheck.SetChecked(settings.LoadSettings().FullscreenCustomerView)
 
+	dnsaCheck := widget.NewCheck("", func(b bool) {})
+	dnsaCheck.SetChecked(settings.LoadSettings().ShowDeleteConfirmation)
+
+	
+
 	return &widget.Form{
 		Items: []*widget.FormItem{ // we can specify items in the constructor
 			{Text: "Default Template", Widget: tName},
@@ -473,6 +562,7 @@ func SettingsTab(w fyne.Window) *widget.Form {
 			{Text: "Break Label Color", Widget: bContent},
 			{Text: "Daily Hours", Widget: dhContent},
 			{Text: "Fullscreen Customer View", Widget: fsCheck},
+			{Text: "Show delete confirmation", Widget: dnsaCheck},
 		},
 		SubmitText: "Save",
 		OnSubmit: func() {
@@ -485,6 +575,7 @@ func SettingsTab(w fyne.Window) *widget.Form {
 				BreakColor:             converter.ColorToInt(bColor),
 				StandardHours:          [2]string{stEntry.Text, etEntry.Text},
 				FullscreenCustomerView: fsCheck.Checked,
+				ShowDeleteConfirmation: dnsaCheck.Checked,
 			}
 			s.SaveSettings()
 			handler.Update()

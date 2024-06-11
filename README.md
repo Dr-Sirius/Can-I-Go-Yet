@@ -1,5 +1,5 @@
 ## Can I Go Yet
-Can I Go Yet is an app designed to act as a display kiosk for displaying the staus and hours of a tech office
+Can I Go Yet is an app designed to act as a display kiosk for displaying the staus and hours of the EAHS/EAMS Tech Help Desk
 
 ## Getting Started
 To run it you may require specific packages if your running linux. The packages can be found at https://docs.fyne.io/started/ 

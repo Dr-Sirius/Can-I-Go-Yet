@@ -246,7 +246,7 @@ Ex. []string{"Open","Understaffed","Break"} -> []int{0,2,1}
 */
 func CreateFlags(flags []string) []int {
 	f := []int{}
-	if len(f) == 0 {
+	if len(flags) == 0 {
 		return []int{-1}
 	}
 	for _, x := range flags {

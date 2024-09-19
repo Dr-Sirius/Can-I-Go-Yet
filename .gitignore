@@ -9,3 +9,4 @@
 *.json
 Schedules/Schedules.csv
 Settings/Settings.json
+.lapce/run.toml

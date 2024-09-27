@@ -29,12 +29,17 @@ type Schedule struct {
 // variables
 var timeFormat string = "2006-01-02 3:04 pm"
 
+/* 
+-------------------------------Schedule Creation---------------------------------------
+*/
+
 /*
 Creates a new Schedule struct from formated strings and flags
 
 EX. st & et -> 12:30 am - date -> 2024-08-19
 */
-func New(st string, et string, date string, flags ...int) Schedule {
+func New(st string, et string, date string, flags []int) Schedule {
+	slices.Sort(flags)
 	return NewFromTime(convertTime(st, date), convertTime(et, date), flags)
 }
 
@@ -45,48 +50,20 @@ func NewFromTime(st time.Time, et time.Time, flags []int) Schedule {
 	return Schedule{st, et, flags}
 }
 
-/*
-converts string formatted dates into a time.Time struct
-*/
-func convertTime(timeString string, dateString string) time.Time {
-	timeString = dateString + " " + timeString
-	loc, err := time.LoadLocation("America/New_York")
-	if err != nil {
-		log.Println(err)
-	}
-	timeStruct, err := time.ParseInLocation(timeFormat, timeString, loc)
-	if err != nil {
-		log.Println(err)
-	}
-	return timeStruct
-}
 
 /*
 Sorts schedules based on the start time
 
 Uses a bubble sort algorithm
 */
-func scheduleSort(Schedules ...Schedule) []Schedule {
+func scheduleSort(Schedules []Schedule) []Schedule {
 	for i := len(Schedules) - 1; i >= 0; i -= 1 {
 
 		for x := range i {
-
-			if Schedules[x].StartTime.Compare(Schedules[x+1].StartTime) > 0 {
-				temp := Schedules[x]
-				Schedules[x] = Schedules[x+1]
-				Schedules[x+1] = temp
-			}
-
-		}
-	}
-	return scheduleFlagSort(Schedules...)
-}
-
-func scheduleFlagSort(Schedules ...Schedule) []Schedule {
-	for i := len(Schedules) - 1; i >= 0; i -= 1 {
-
-		for x := range i {
-			if Schedules[x].FlagsSlice()[0] > Schedules[x+1].FlagsSlice()[0]{
+			if Schedules[x].EqualTimes(Schedules[x+1]) {
+				newSchedules := append(Schedules[:x],Schedules[x+1:]...)
+				return scheduleSort(newSchedules)
+			} else if Schedules[x].StartTime.Compare(Schedules[x+1].StartTime) > 0 {
 				temp := Schedules[x]
 				Schedules[x] = Schedules[x+1]
 				Schedules[x+1] = temp
@@ -96,6 +73,11 @@ func scheduleFlagSort(Schedules ...Schedule) []Schedule {
 	}
 	return Schedules
 }
+
+/* 
+-------------------------------String Methods---------------------------------------
+*/
+
 /*
 Returns string version of schedule
 */
@@ -113,7 +95,7 @@ func (s Schedule) PrettyString() string {
 	et := s.StringEndTime()
 	f := func() string {
 		str := ""
-		if _,ok := s.Flags[-1]; ok {
+		if s.Flags[0] == -1 {
 			return "|Closed"
 		}
 		for i := range s.Flags {
@@ -189,26 +171,6 @@ func (s Schedule) StringEndTime() string {
 }
 
 /*
-Returns boolean based on if schedule s is equal to schedule o
-*/
-func (s Schedule) Equal(o Schedule) bool {
-	return s.StartTime.Equal(o.StartTime) && s.EndTime.Equal(o.EndTime) && func() bool {
-		
-		if len(s.FlagsSlice()) != len(o.FlagsSlice()) {
-			return false
-		}
-		
-		for a := range len(s.FlagsSlice()) {
-			if s.FlagsSlice()[a] != o.FlagsSlice()[a] {
-				return false
-			}
-		}
-		return true
-
-	}()
-}
-
-/*
 Returns string containg date formatted as yyyy-mm-dd
 */
 func (s Schedule) Date() string {
@@ -222,16 +184,55 @@ func (s Schedule) Date() string {
 }
 
 /*
-Returns int slice containg all flags in schedule s
+converts string formatted dates into a time.Time struct
 */
-func (s Schedule) FlagsSlice() []int {
-	x := []int{}
-	for a := range s.Flags {
-		x = append(x, a)
+func convertTime(timeString string, dateString string) time.Time {
+	timeString = dateString + " " + timeString
+	loc, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		log.Println(err)
 	}
-	slices.Sort(x)
-	return x
+	timeStruct, err := time.ParseInLocation(timeFormat, timeString, loc)
+	if err != nil {
+		log.Println(err)
+	}
+	return timeStruct
 }
+
+/* 
+-------------------------------Comparison Methods---------------------------------------
+*/
+
+/*
+Returns true if schedule s is equal to schedule o
+*/
+func (s Schedule) Equal(o Schedule) bool {
+	return s.StartTime.Equal(o.StartTime) && s.EndTime.Equal(o.EndTime) && func() bool {
+		
+		if len(s.Flags) != len(o.Flags) {
+			return false
+		}
+		
+		for a := range len(s.Flags) {
+			if s.Flags[a] != o.Flags[a] {
+				return false
+			}
+		}
+		return true
+
+	}()
+}
+
+/*
+Returns true if schedule s StartTime and EndTime is equal to schedule o StartTime and EndTime
+*/
+func (s Schedule) EqualTimes(o Schedule) bool {
+	return s.StartTime.Equal(o.StartTime) && s.EndTime.Equal(o.EndTime)
+}
+
+/* 
+-------------------------------File Methods---------------------------------------
+*/
 
 /*
 Returns an array of Schedule structs from the Schedules folder
@@ -273,7 +274,7 @@ func LoadSchedules() []Schedule {
 			}
 			fs = append(fs, cf)
 		}
-		ns := NewSchedule(r[1], r[2], r[0], fs...)
+		ns := New(r[1], r[2], r[0], fs)
 		s = append(s, ns)
 	}
 	return s
@@ -282,7 +283,7 @@ func LoadSchedules() []Schedule {
 /*
 Adds schedule to Schedules.csv
 */
-func AddSchedule(date string, startTime string, endTime string, flags ...int) {
+func AddSchedule(date string, startTime string, endTime string, flags []int) {
 	flagString := ""
 	for _, f := range flags {
 		flagString += fmt.Sprint(f) + "|"
@@ -325,6 +326,6 @@ func RemoveSchedule(s Schedule) {
 	
 
 	for _,x := range sch {
-		AddSchedule(x.Date(),x.StringStartTime(),x.StringEndTime(),x.FlagsSlice()...)
+		AddSchedule(x.Date(),x.StringStartTime(),x.StringEndTime(),x.Flags)
 	}
 }

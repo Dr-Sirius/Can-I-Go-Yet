@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// Flags
 const (
 	OPEN int = iota
 	BRKE     // break
@@ -23,95 +24,41 @@ const (
 type Schedule struct {
 	StartTime time.Time
 	EndTime   time.Time
-	Flags     map[int]bool
+	Flags     []int
 }
-
-// Holds a slice of schedules for the specified date
-type Day struct {
-	// formated as YYYY-MM-DD
-	Date      string
-	Schedules []Schedule
-}
+// variables
+var timeFormat string = "2006-01-02 3:04 pm"
 
 /*
 Creates a new Schedule struct from formated strings and flags
 
 EX. st & et -> 12:30 am - date -> 2024-08-19
 */
-func NewSchedule(st string, et string, date string, flags ...int) Schedule {
-	return NewScheduleFromTime(convertTime(st, date), convertTime(et, date), flags...)
+func New(st string, et string, date string, flags ...int) Schedule {
+	return NewFromTime(convertTime(st, date), convertTime(et, date), flags)
 }
 
 /*
 Creates a new Schedule struct from time.Time structs and flags
 */
-func NewScheduleFromTime(st time.Time, et time.Time, flags ...int) Schedule {
-	f := make(map[int]bool)
-	for _, x := range flags {
-		f[x] = true
-	}
-	return Schedule{st, et, f}
+func NewFromTime(st time.Time, et time.Time, flags []int) Schedule {
+	return Schedule{st, et, flags}
 }
 
 /*
 converts string formatted dates into a time.Time struct
 */
-func convertTime(s string, d string) time.Time {
-	format := "2006-01-02 3:04 pm"
-	s = d + " " + s
+func convertTime(timeString string, dateString string) time.Time {
+	timeString = dateString + " " + timeString
 	loc, err := time.LoadLocation("America/New_York")
 	if err != nil {
 		log.Println(err)
 	}
-	t, err := time.ParseInLocation(format, s, loc)
+	timeStruct, err := time.ParseInLocation(timeFormat, timeString, loc)
 	if err != nil {
 		log.Println(err)
 	}
-	return t
-}
-
-/*
-Creates a new Day struct which holds Schedule structs for a specified date
-*/
-func NewDay(date string, schedules ...Schedule) Day {
-	s := make([]Schedule, 0)
-	for _, x := range schedules {
-		y, m, d := x.StartTime.Date()
-		mt := fmt.Sprint(int(m))
-		if int(m) < 10 {
-			mt = "0" + mt
-		}
-
-		dt := fmt.Sprint(y) + "-" + mt + "-" + fmt.Sprint(d)
-		if dt == date {
-			s = append(s, x)
-		}
-	}
-
-	return Day{date, scheduleSort(s...)}
-}
-
-/*
-Creates a new Day struct which holds Schedule structs for a specified date
-*/
-func NewDayFromTime(date time.Time, schedules ...Schedule) Day {
-	s := make([]Schedule, 0)
-	dy, dm, dd := date.Date()
-	for _, x := range schedules {
-
-		sy, sm, sd := x.StartTime.Date()
-		if dy == sy && dm == sm && dd == sd {
-			s = append(s, x)
-		}
-	}
-	mt := fmt.Sprint(int(dm))
-	if int(dm) < 10 {
-		mt = "0" + mt
-	}
-
-	dt := fmt.Sprint(dy) + "-" + mt + "-" + fmt.Sprint(dd)
-
-	return Day{dt, scheduleSort(s...)}
+	return timeStruct
 }
 
 /*

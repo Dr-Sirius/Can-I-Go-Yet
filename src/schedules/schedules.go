@@ -1,14 +1,13 @@
-package scheduler
+package schedules
 
 import (
-	"encoding/csv"
-	"errors"
+	
+
 	"fmt"
 	"log"
-	"os"
+
 	"slices"
-	"strconv"
-	"strings"
+	
 	"time"
 )
 
@@ -230,102 +229,104 @@ func (s Schedule) EqualTimes(o Schedule) bool {
 	return s.StartTime.Equal(o.StartTime) && s.EndTime.Equal(o.EndTime)
 }
 
-/* 
--------------------------------File Methods---------------------------------------
-*/
 
-/*
-Returns an array of Schedule structs from the Schedules folder
-*/
-func LoadSchedules() []Schedule {
-	if _, err := os.Stat("Schedules/Schedules.csv"); errors.Is(err, os.ErrNotExist) {
-		if err := os.Mkdir("Schedules", os.ModePerm); err != nil {
-			log.Println(err)
-		} else {
-			os.Create("Schedules/Schedules.csv")
-			os.WriteFile("Schedules/Schedules.csv", []byte("Date, Start_Time, End_Time, Flags"), os.ModePerm)
-		}
-	}
-	file, err := os.Open("Schedules/Schedules.csv")
+// /* 
+// -------------------------------File Methods---------------------------------------
+// */
 
-	if err != nil {
-		log.Println(err)
-	}
+// /*
+// Returns an array of Schedule structs from the Schedules folder
+// */
+// func LoadSchedules() []Schedule {
+// 	if _, err := os.Stat("Schedules/Schedules.csv"); errors.Is(err, os.ErrNotExist) {
+// 		if err := os.Mkdir("Schedules", os.ModePerm); err != nil {
+// 			log.Println(err)
+// 		} else {
+// 			os.Create("Schedules/Schedules.csv")
+// 			os.WriteFile("Schedules/Schedules.csv", []byte("Date, Start_Time, End_Time, Flags"), os.ModePerm)
+// 		}
+// 	}
+// 	file, err := os.Open("Schedules/Schedules.csv")
 
-	defer file.Close()
+// 	if err != nil {
+// 		log.Println(err)
+// 	}
 
-	reader := csv.NewReader(file)
+// 	defer file.Close()
 
-	records, err := reader.ReadAll()
+// 	reader := csv.NewReader(file)
 
-	if err != nil {
-		log.Println(err)
-	}
+// 	records, err := reader.ReadAll()
 
-	var s []Schedule
+// 	if err != nil {
+// 		log.Println(err)
+// 	}
 
-	for _, r := range records[1:] {
-		f := strings.Split(r[3], "|")
-		var fs []int
-		for _, x := range f {
-			cf, err := strconv.Atoi(strings.Trim(x, " "))
-			if !errors.Is(err,strconv.ErrSyntax) && err != nil {
-				log.Println(err)
-			}
-			fs = append(fs, cf)
-		}
-		ns := New(r[1], r[2], r[0], fs)
-		s = append(s, ns)
-	}
-	return s
-}
+// 	var s []Schedule
 
-/*
-Adds schedule to Schedules.csv
-*/
-func AddSchedule(date string, startTime string, endTime string, flags []int) {
-	flagString := ""
-	for _, f := range flags {
-		flagString += fmt.Sprint(f) + "|"
-	}
+// 	for _, r := range records[1:] {
+// 		f := strings.Split(r[3], "|")
+// 		var fs []int
+// 		for _, x := range f {
+// 			cf, err := strconv.Atoi(strings.Trim(x, " "))
+// 			if !errors.Is(err,strconv.ErrSyntax) && err != nil {
+// 				log.Println(err)
+// 			}
+// 			fs = append(fs, cf)
+// 		}
+// 		ns := New(r[1], r[2], r[0], fs)
+// 		s = append(s, ns)
+// 	}
+// 	return s
+// }
 
-	sch := "\n" + date + ", " + startTime + ", " + endTime + ", " + flagString
+// /*
+// Adds schedule to Schedules.csv
+// */
+// func AddSchedule(date string, startTime string, endTime string, flags []int) {
+// 	flagString := ""
+// 	for _, f := range flags {
+// 		flagString += fmt.Sprint(f) + "|"
+// 	}
 
-	file, err := os.OpenFile("Schedules/Schedules.csv", os.O_APPEND|os.O_WRONLY, 0644)
+// 	sch := "\n" + date + ", " + startTime + ", " + endTime + ", " + flagString
 
-	if err != nil {
-		log.Println(err)
-	}
+// 	file, err := os.OpenFile("Schedules/Schedules.csv", os.O_APPEND|os.O_WRONLY, 0644)
 
-	defer file.Close()
+// 	if err != nil {
+// 		log.Println(err)
+// 	}
 
-	_, err = file.WriteString(sch)
+// 	defer file.Close()
 
-	if err != nil {
-		log.Println(err)
+// 	_, err = file.WriteString(sch)
+
+// 	if err != nil {
+// 		log.Println(err)
 		
 
-	}
-}
+// 	}
+// }
 
 
-/*
-Removes passed schedule from Schedules.csv
-*/
-func RemoveSchedule(s Schedule) {
-	sch := LoadSchedules()
-	for i, x := range sch {
-		if x.Equal(s) {
-			sch = append(sch[0:i], sch[i+1:]...)
-			break
-		}
-	}
-	if err := os.WriteFile("Schedules/Schedules.csv",[]byte("Date, Start_Time, End_Time, Flags"),os.ModePerm); err != nil {
-		log.Println(err)
-	}
+// /*
+// Removes passed schedule from Schedules.csv
+// */
+// func RemoveSchedule(s Schedule) {
+// 	sch := LoadSchedules()
+// 	for i, x := range sch {
+// 		if x.Equal(s) {
+// 			sch = append(sch[0:i], sch[i+1:]...)
+// 			break
+// 		}
+// 	}
+// 	if err := os.WriteFile("Schedules/Schedules.csv",[]byte("Date, Start_Time, End_Time, Flags"),os.ModePerm); err != nil {
+// 		log.Println(err)
+// 	}
 	
 
-	for _,x := range sch {
-		AddSchedule(x.Date(),x.StringStartTime(),x.StringEndTime(),x.Flags)
-	}
-}
+// 	for _,x := range sch {
+// 		AddSchedule(x.Date(),x.StringStartTime(),x.StringEndTime(),x.Flags)
+// 	}
+// }
+

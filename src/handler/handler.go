@@ -2,8 +2,9 @@ package handler
 
 import (
 	"can-i-go-yet/src/converter"
-	"can-i-go-yet/src/scheduler"
+	"can-i-go-yet/src/schedules"
 	"can-i-go-yet/src/settings"
+	"can-i-go-yet/src/templates"
 	"fmt"
 	"image/color"
 	"log"
@@ -13,7 +14,7 @@ import (
 	"fyne.io/fyne/v2/container"
 )
 
-var sch []scheduler.Schedule
+var sch []schedules.Schedule
 var stayOpen bool = settings.LoadSettings().StayOpen
 var Announcments string = ""
 var Status string = ""
@@ -23,8 +24,8 @@ var defaultTemplate = settings.LoadSettings().DefaultTemplate
 Loads and Sets schedules for the current date
 */
 func SetTime() {
-	s := scheduler.LoadSchedules()
-	sch = scheduler.NewDayFromTime(time.Now(), s...).Schedules
+	s, _ := templates.LoadTemplate(defaultTemplate)
+	sch = s.Schedules
 	for _, x := range sch {
 		if time.Now().Equal(x.StartTime) || (time.Now().After(x.StartTime) && time.Now().Before(x.EndTime)) {
 			return
@@ -54,7 +55,7 @@ stOpen:
 		return setOpen()
 	} else {
 		set := settings.LoadSettings()
-		dHours := scheduler.NewSchedule(set.StandardHours[0], set.StandardHours[1], time.Now().Format("2006-01-02"), 0)
+		dHours := schedules.NewSchedule(set.StandardHours[0], set.StandardHours[1], time.Now().Format("2006-01-02"), 0)
 		if dHours.StartTime.Equal(time.Now()) || (dHours.StartTime.Before(time.Now()) && dHours.EndTime.After(time.Now())) {
 			Status = "Open"
 			return setOpen()
@@ -71,8 +72,8 @@ Checks and returns status of current schedule based on its flags
 func CheckFlags() (string, color.Color) {
 	flags := GetCurrentSchedule().Flags
 
-	if _, ok := flags[scheduler.BRKE]; ok {
-		if _, ok := flags[scheduler.UNDS]; ok {
+	if _, ok := flags[schedules.BRKE]; ok {
+		if _, ok := flags[schedules.UNDS]; ok {
 			Status = "Closed"
 			return setClosed()
 		} else {
@@ -80,9 +81,9 @@ func CheckFlags() (string, color.Color) {
 			return setOnBreak()
 		}
 
-	} else if _, ok := flags[scheduler.UNDS]; ok {
+	} else if _, ok := flags[schedules.UNDS]; ok {
 		return setUnderStaffed()
-	} else if _, ok := flags[scheduler.OPEN]; ok {
+	} else if _, ok := flags[schedules.OPEN]; ok {
 		if _, ok := flags[-1]; ok {
 			Status = "Closed"
 			return setClosed()
@@ -143,16 +144,16 @@ func GetDate() string {
 /*
 Returns all of todays schedules
 */
-func GetSchedules() []scheduler.Schedule {
+func GetSchedules() []schedules.Schedule {
 	return sch
 }
 
 /*
 Returns the current schedule from todays schedule based on current time
 */
-func GetCurrentSchedule() scheduler.Schedule {
+func GetCurrentSchedule() schedules.Schedule {
 	if checkSchedule() == -1 {
-		return scheduler.Schedule{}
+		return schedules.Schedule{}
 	}
 	return sch[checkSchedule()]
 }
@@ -160,9 +161,9 @@ func GetCurrentSchedule() scheduler.Schedule {
 /*
 Returns the next schedule from todays schedule based on current schedule and time
 */
-func GetNextSchedule() scheduler.Schedule {
+func GetNextSchedule() schedules.Schedule {
 	if checkNextSchedule() == -1 {
-		return scheduler.Schedule{StartTime: GetCurrentSchedule().EndTime}
+		return schedules.Schedule{StartTime: GetCurrentSchedule().EndTime}
 	}
 	return sch[checkNextSchedule()]
 }
@@ -215,18 +216,18 @@ Removes given schedule at index from sch and Schedules.csv
 */
 func Remove(index int) {
 
-	if (len(sch) == 1 || len(sch) == 0) && sch[0].Equal(scheduler.Schedule{}) {
+	if (len(sch) == 1 || len(sch) == 0) && sch[0].Equal(schedules.Schedule{}) {
 		return
 	}
 
-	scheduler.RemoveSchedule(sch[index])
+	schedules.RemoveSchedule(sch[index])
 	s := sch[0:index]
 	if len(sch)-1 > index {
 		s = append(s, sch[index+1:]...)
 	}
 
 	if len(s) == 0 {
-		s = append(s, scheduler.Schedule{})
+		s = append(s, schedules.Schedule{})
 	}
 	sch = s
 
@@ -240,7 +241,7 @@ func RemoveAll() {
 }
 
 /*
-Returns an array of ints containg Scheduler flag const values
+Returns an array of ints containg schedules flag const values
 
 Ex. []string{"Open","Understaffed","Break"} -> []int{0,2,1}
 */
@@ -251,16 +252,16 @@ func CreateFlags(flags []string) []int {
 	}
 	for _, x := range flags {
 		if x == "Open" {
-			f = append(f, scheduler.OPEN)
+			f = append(f, schedules.OPEN)
 		}
 		if x == "Break" {
-			f = append(f, scheduler.BRKE)
+			f = append(f, schedules.BRKE)
 		}
 		if x == "Understaffed" {
-			f = append(f, scheduler.UNDS)
+			f = append(f, schedules.UNDS)
 		}
 		if x == "Holiday" {
-			f = append(f, scheduler.HDAY)
+			f = append(f, schedules.HDAY)
 		}
 	}
 	log.Println(f)

@@ -1,13 +1,11 @@
 package schedules
 
 import (
-	
-
 	"fmt"
 	"log"
 
 	"slices"
-	
+
 	"time"
 )
 
@@ -25,10 +23,11 @@ type Schedule struct {
 	EndTime   time.Time
 	Flags     []int
 }
+
 // variables
 var timeFormat string = "2006-01-02 3:04 pm"
 
-/* 
+/*
 -------------------------------Schedule Creation---------------------------------------
 */
 
@@ -49,7 +48,6 @@ func NewFromTime(st time.Time, et time.Time, flags []int) Schedule {
 	return Schedule{st, et, flags}
 }
 
-
 /*
 Sorts schedules based on the start time
 
@@ -60,7 +58,7 @@ func scheduleSort(Schedules []Schedule) []Schedule {
 
 		for x := range i {
 			if Schedules[x].EqualTimes(Schedules[x+1]) {
-				newSchedules := append(Schedules[:x],Schedules[x+1:]...)
+				newSchedules := append(Schedules[:x], Schedules[x+1:]...)
 				return scheduleSort(newSchedules)
 			} else if Schedules[x].StartTime.Compare(Schedules[x+1].StartTime) > 0 {
 				temp := Schedules[x]
@@ -73,7 +71,7 @@ func scheduleSort(Schedules []Schedule) []Schedule {
 	return Schedules
 }
 
-/* 
+/*
 -------------------------------String Methods---------------------------------------
 */
 
@@ -110,7 +108,7 @@ func (s Schedule) PrettyString() string {
 			if i == HDAY {
 				str += "|Holiday"
 			}
-			
+
 		}
 		return str
 	}
@@ -198,7 +196,7 @@ func convertTime(timeString string, dateString string) time.Time {
 	return timeStruct
 }
 
-/* 
+/*
 -------------------------------Comparison Methods---------------------------------------
 */
 
@@ -207,11 +205,11 @@ Returns true if schedule s is equal to schedule o
 */
 func (s Schedule) Equal(o Schedule) bool {
 	return s.StartTime.Equal(o.StartTime) && s.EndTime.Equal(o.EndTime) && func() bool {
-		
+
 		if len(s.Flags) != len(o.Flags) {
 			return false
 		}
-		
+
 		for a := range len(s.Flags) {
 			if s.Flags[a] != o.Flags[a] {
 				return false
@@ -229,104 +227,10 @@ func (s Schedule) EqualTimes(o Schedule) bool {
 	return s.StartTime.Equal(o.StartTime) && s.EndTime.Equal(o.EndTime)
 }
 
+/*
+Returns a version of the Schedule with the changed date
+*/
+func GetScheduleWithTodayDate(s Schedule) Schedule {
+	return New(s.StringStartTime(), s.StringEndTime(), time.Now().Format("2006-01-02"), s.Flags)
 
-// /* 
-// -------------------------------File Methods---------------------------------------
-// */
-
-// /*
-// Returns an array of Schedule structs from the Schedules folder
-// */
-// func LoadSchedules() []Schedule {
-// 	if _, err := os.Stat("Schedules/Schedules.csv"); errors.Is(err, os.ErrNotExist) {
-// 		if err := os.Mkdir("Schedules", os.ModePerm); err != nil {
-// 			log.Println(err)
-// 		} else {
-// 			os.Create("Schedules/Schedules.csv")
-// 			os.WriteFile("Schedules/Schedules.csv", []byte("Date, Start_Time, End_Time, Flags"), os.ModePerm)
-// 		}
-// 	}
-// 	file, err := os.Open("Schedules/Schedules.csv")
-
-// 	if err != nil {
-// 		log.Println(err)
-// 	}
-
-// 	defer file.Close()
-
-// 	reader := csv.NewReader(file)
-
-// 	records, err := reader.ReadAll()
-
-// 	if err != nil {
-// 		log.Println(err)
-// 	}
-
-// 	var s []Schedule
-
-// 	for _, r := range records[1:] {
-// 		f := strings.Split(r[3], "|")
-// 		var fs []int
-// 		for _, x := range f {
-// 			cf, err := strconv.Atoi(strings.Trim(x, " "))
-// 			if !errors.Is(err,strconv.ErrSyntax) && err != nil {
-// 				log.Println(err)
-// 			}
-// 			fs = append(fs, cf)
-// 		}
-// 		ns := New(r[1], r[2], r[0], fs)
-// 		s = append(s, ns)
-// 	}
-// 	return s
-// }
-
-// /*
-// Adds schedule to Schedules.csv
-// */
-// func AddSchedule(date string, startTime string, endTime string, flags []int) {
-// 	flagString := ""
-// 	for _, f := range flags {
-// 		flagString += fmt.Sprint(f) + "|"
-// 	}
-
-// 	sch := "\n" + date + ", " + startTime + ", " + endTime + ", " + flagString
-
-// 	file, err := os.OpenFile("Schedules/Schedules.csv", os.O_APPEND|os.O_WRONLY, 0644)
-
-// 	if err != nil {
-// 		log.Println(err)
-// 	}
-
-// 	defer file.Close()
-
-// 	_, err = file.WriteString(sch)
-
-// 	if err != nil {
-// 		log.Println(err)
-		
-
-// 	}
-// }
-
-
-// /*
-// Removes passed schedule from Schedules.csv
-// */
-// func RemoveSchedule(s Schedule) {
-// 	sch := LoadSchedules()
-// 	for i, x := range sch {
-// 		if x.Equal(s) {
-// 			sch = append(sch[0:i], sch[i+1:]...)
-// 			break
-// 		}
-// 	}
-// 	if err := os.WriteFile("Schedules/Schedules.csv",[]byte("Date, Start_Time, End_Time, Flags"),os.ModePerm); err != nil {
-// 		log.Println(err)
-// 	}
-	
-
-// 	for _,x := range sch {
-// 		AddSchedule(x.Date(),x.StringStartTime(),x.StringEndTime(),x.Flags)
-// 	}
-// }
-
+}

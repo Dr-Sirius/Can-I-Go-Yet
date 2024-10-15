@@ -7,7 +7,7 @@ import (
 	"can-i-go-yet/src/templates"
 )
 
-var Schedules []scheduler.Schedule
+var Schedules []schedules.Schedule
 
 func Start() {
 	

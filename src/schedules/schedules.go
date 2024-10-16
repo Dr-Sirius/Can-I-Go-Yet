@@ -90,9 +90,10 @@ Returns formated string version of schedule
 func (s Schedule) PrettyString() string {
 	st := s.StringStartTime()
 	et := s.StringEndTime()
+	log.Println(s.Flags)
 	f := func() string {
 		str := ""
-		if s.Flags[0] == -1 {
+		if len(s.Flags) == 0 || s.Flags[0] == -1 {
 			return "|Closed"
 		}
 		for i := range s.Flags {
@@ -228,9 +229,18 @@ func (s Schedule) EqualTimes(o Schedule) bool {
 }
 
 /*
-Returns a version of the Schedule with the changed date
+Returns a version of the Schedule with the current date
 */
 func GetScheduleWithTodayDate(s Schedule) Schedule {
 	return New(s.StringStartTime(), s.StringEndTime(), time.Now().Format("2006-01-02"), s.Flags)
 
+}
+
+func HasFlag(f []int, flag int) bool {
+	for x := range f {
+		if x == flag {
+			return true
+		}
+	}
+	return false
 }

@@ -3,9 +3,9 @@ package ui
 import (
 	"can-i-go-yet/src/converter"
 	"can-i-go-yet/src/handler"
-	"can-i-go-yet/src/scheduler"
+	"can-i-go-yet/src/schedules"
 	"can-i-go-yet/src/settings"
-	"can-i-go-yet/src/templater"
+	"can-i-go-yet/src/templates"
 	"errors"
 
 	"image/color"
@@ -31,16 +31,16 @@ func Run() {
 	myWindow := app.NewWindow("Can I Go Yet?")
 
 	b := binding.NewUntypedList()
-	for _, x := range scheduler.LoadSchedules() {
-		b.Append(x)
-	}
+	// for _, x := range schedules.LoadSchedules() {
+	// 	b.Append(x)
+	// }
 
 	content := container.NewAppTabs(
 		container.NewTabItem("Today", TodayTab(b)),
 		container.NewTabItem("Announcments", Announcments()),
-		container.NewTabItem("Add Schedule", AddForm(b,myWindow)),
-		container.NewTabItem("Remove Schedule", Remove(b,myWindow)),
-		container.NewTabItem("Templates", TemplateTab(b,myWindow)),
+		container.NewTabItem("Add Schedule", AddForm(b, myWindow)),
+		container.NewTabItem("Remove Schedule", Remove(b, myWindow)),
+		container.NewTabItem("Templates", TemplateTab(b, myWindow)),
 		container.NewTabItem("Build Template", BuildTemplatTab(myWindow)),
 		container.NewTabItem("Settings", SettingsTab(myWindow)),
 	)
@@ -128,16 +128,14 @@ func AddForm(data binding.UntypedList, win fyne.Window) *widget.Form {
 		},
 		OnSubmit: func() {
 			if dtEntry.Text == "" || stEntry.Text == "" || etEntry.Text == "" {
-				
-			
-				dialog.NewError(errors.New("the entries cannot be left blank"),win).Show()
-	
-				return 
-				
-				
+
+				dialog.NewError(errors.New("the entries cannot be left blank"), win).Show()
+
+				return
+
 			}
-			s := scheduler.NewSchedule(stEntry.Text, etEntry.Text, dtEntry.Text, handler.CreateFlags(flags.Selected)...)
-			scheduler.AddSchedule(dtEntry.Text, stEntry.Text, etEntry.Text, handler.CreateFlags(flags.Selected)...)
+			s := schedules.New(stEntry.Text, etEntry.Text, dtEntry.Text, handler.CreateFlags(flags.Selected))
+			//schedules.AddSchedule(dtEntry.Text, stEntry.Text, etEntry.Text, handler.CreateFlags(flags.Selected)...)
 			data.Append(s)
 			if dtEntry.Text == handler.GetDate() {
 				handler.SetTime()
@@ -155,11 +153,11 @@ func Remove(data binding.UntypedList, win fyne.Window) *fyne.Container {
 	rl := TodayList(data)
 	removeBTN := widget.NewButton("Remove", func() {
 		if selected == -1 {
-			
-			dialog.NewError(errors.New("there are no schedules selected"),win).Show()
 
-			return 
-			
+			dialog.NewError(errors.New("there are no schedules selected"), win).Show()
+
+			return
+
 		}
 
 		handler.Remove(selected)
@@ -172,20 +170,20 @@ func Remove(data binding.UntypedList, win fyne.Window) *fyne.Container {
 		rl.Refresh()
 	})
 
-	removeAllBTN := widget.NewButton("Remove All", func() {
-		if len(scheduler.LoadSchedules()) == 0 {
-			
-			dialog.NewError(errors.New("there are no schedules\n\n you can create new schedules in the Add Schedule tab"),win).Show()
+	// removeAllBTN := widget.NewButton("Remove All", func() {
+	// 	if len(schedules.LoadSchedules()) == 0 {
 
-			return 
-			
-		}
-		handler.RemoveAll()
-		s := make([]interface{}, 0)
-		data.Set(s)
-		rl.UnselectAll()
-		rl.Refresh()
-	})
+	// 		dialog.NewError(errors.New("there are no schedules\n\n you can create new schedules in the Add Schedule tab"),win).Show()
+
+	// 		return
+
+	// 	}
+	// 	handler.RemoveAll()
+	// 	s := make([]interface{}, 0)
+	// 	data.Set(s)
+	// 	rl.UnselectAll()
+	// 	rl.Refresh()
+	// })
 
 	rl.OnSelected = func(id widget.ListItemID) {
 		lbl.Text = "Remove " + handler.GetSchedules()[id].PrettyString() + " ?"
@@ -200,7 +198,7 @@ func Remove(data binding.UntypedList, win fyne.Window) *fyne.Container {
 		lbl,
 		container.NewHBox(
 			removeBTN,
-			removeAllBTN,
+			//removeAllBTN,
 		),
 	)
 
@@ -227,7 +225,7 @@ func Announcments() *widget.Form {
 /*
 Creates *fyne.Container for viewing templates and adding them to todays schedule
 */
-func TemplateTab(data binding.UntypedList,win fyne.Window) *fyne.Container {
+func TemplateTab(data binding.UntypedList, win fyne.Window) *fyne.Container {
 	todayLBL := canvas.NewText("Templates", color.Black)
 	todayLBL.TextSize = 35
 	tabs := container.NewDocTabs(TemplateTabs()...)
@@ -244,50 +242,49 @@ func TemplateTab(data binding.UntypedList,win fyne.Window) *fyne.Container {
 
 	tabs.OnClosed = func(ti *container.TabItem) {
 		s := settings.LoadSettings()
-		
+
 		if s.ShowDeleteConfirmation {
-			w := widget.NewCheck("Do not show again",func(b bool) {
+			w := widget.NewCheck("Do not show again", func(b bool) {
 				if b {
 					s.ShowDeleteConfirmation = false
 					s.SaveSettings()
 
 				}
 			})
-			
+
 			dialog.NewCustomConfirm(
 				"This action will delete the selected template\nDo you wish to continue with this action?",
 				"Yes",
 				"No",
-				w,func(b bool) {if b {templater.RemoveTemplate(ti.Text)}},
+				w, func(b bool) {
+					if b {
+						templates.RemoveTemplate(ti.Text)
+					}
+				},
 				win,
-				).Show()
+			).Show()
 			return
-			
-			
-		
+
 		}
-		templater.RemoveTemplate(ti.Text)
-		
-		
-		
+		templates.RemoveTemplate(ti.Text)
 
 	}
 
 	addBTN := widget.NewButton("Add Template to Todays Schedule", func() {
-		if len(templater.GetAllTemplates()) == 0 {
-			dialog.NewError(errors.New("there are no templates\n\n you can create a new template in the Build Template tab"),win).Show()
+		if len(templates.LoadAllTemplates()) == 0 {
+			dialog.NewError(errors.New("there are no templates\n\n you can create a new template in the Build Template tab"), win).Show()
 
-			return 
+			return
 		}
 		if name == "" {
-			dialog.NewError(errors.New("there are no templates currently selected"),win).Show()
+			dialog.NewError(errors.New("there are no templates currently selected"), win).Show()
 
-			return 
+			return
 		}
-		for _, x := range templater.LoadTemplate(name) {
+		template, _ := templates.LoadTemplate(name)
+		for _, x := range template.Schedules {
 
-			scheduler.AddSchedule(dateENT.Text, x.Start_Time, x.End_Time, x.FlagsSlice()...)
-			data.Append(scheduler.NewSchedule(x.Start_Time, x.End_Time, dateENT.Text, x.FlagsSlice()...))
+			data.Append(schedules.New(x.StringStartTime(), x.StringEndTime(), dateENT.Text, x.Flags))
 
 		}
 
@@ -296,23 +293,23 @@ func TemplateTab(data binding.UntypedList,win fyne.Window) *fyne.Container {
 	})
 
 	replaceBTN := widget.NewButton("Replace Todays Schedule with Template", func() {
-		if len(templater.GetAllTemplates()) == 0 {
-			dialog.NewError(errors.New("there are no templates\n\n you can create a new template in the Build Template tab"),win).Show()
+		if len(templates.LoadAllTemplates()) == 0 {
+			dialog.NewError(errors.New("there are no templates\n\n you can create a new template in the Build Template tab"), win).Show()
 
-			return 
+			return
 		}
 		if name == "" {
-			dialog.NewError(errors.New("there are no templates currently selected"),win).Show()
+			dialog.NewError(errors.New("there are no templates currently selected"), win).Show()
 
-			return 
+			return
 		}
 		s := make([]interface{}, 0)
 		data.Set(s)
 		handler.RemoveAll()
-		for _, x := range templater.LoadTemplate(name) {
+		template, _ := templates.LoadTemplate(name)
+		for _, x := range template.Schedules {
 
-			scheduler.AddSchedule(dateENT.Text, x.Start_Time, x.End_Time, x.FlagsSlice()...)
-			data.Append(scheduler.NewSchedule(x.Start_Time, x.End_Time, dateENT.Text, x.FlagsSlice()...))
+			data.Append(schedules.New(x.StringStartTime(), x.StringEndTime(), dateENT.Text, x.Flags))
 
 		}
 
@@ -347,12 +344,12 @@ Creates []*container.TabItem that holds tabs for each saved template in Template
 */
 func TemplateTabs() []*container.TabItem {
 	var tabs []*container.TabItem
-	t := templater.GetAllTemplates()
-	if len(t) != 0 {
-		for i, x := range t {
+	template := templates.LoadAllTemplates()
+	if len(template) != 0 {
+		for _, x := range template {
 			c := container.NewTabItem(
-				i,
-				TemplateList(x),
+				x.Name,
+				TemplateList(x.Schedules),
 			)
 
 			tabs = append(tabs, c)
@@ -363,12 +360,12 @@ func TemplateTabs() []*container.TabItem {
 }
 
 /*
-Creates *widget.List that displays template information for the passed []templater.Template
+Creates *widget.List that displays template information for the passed []templates.Template
 */
-func TemplateList(t []templater.Template) *widget.List {
+func TemplateList(s []schedules.Schedule) *widget.List {
 	return widget.NewList(
 		func() int {
-			return len(t)
+			return len(s)
 		},
 		func() fyne.CanvasObject {
 
@@ -377,7 +374,7 @@ func TemplateList(t []templater.Template) *widget.List {
 			return lbl
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
-			o.(*canvas.Text).Text = t[i].PrettyString()
+			o.(*canvas.Text).Text = s[i].PrettyString()
 		},
 	)
 }
@@ -395,12 +392,12 @@ func TemplateForm(list *widget.List, b *binding.UntypedList, win fyne.Window) *f
 	etEntry := widget.NewEntry()
 	etEntry.SetText("12:00 pm")
 	saveBTN := widget.NewButtonWithIcon("Save Template", theme.DocumentSaveIcon(), func() {
-		t := []templater.Template{}
+		schedule := []schedules.Schedule{}
 		for i := range (*b).Length() {
 			item, _ := (*b).GetItem(i)
-			t = append(t, converter.DataItemToTemplate(item))
+			schedule = append(schedule, converter.DataItemToSchedule(item))
 		}
-		templater.AddTemplate(t)
+		templates.CreateTemplateFile(templates.Template{Name: tName.Text, Schedules: schedule})
 		tName.Enable()
 		s := make([]interface{}, 0)
 		(*b).Set(s)
@@ -411,7 +408,7 @@ func TemplateForm(list *widget.List, b *binding.UntypedList, win fyne.Window) *f
 		stEntry.Refresh()
 		etEntry.Refresh()
 		list.Refresh()
-		
+
 	})
 	flags := widget.CheckGroup{
 		Horizontal: true,
@@ -433,16 +430,14 @@ func TemplateForm(list *widget.List, b *binding.UntypedList, win fyne.Window) *f
 		SubmitText: "Add",
 		OnSubmit: func() {
 			if tName.Text == "" || stEntry.Text == "" || etEntry.Text == "" {
-				
-			
-				dialog.NewError(errors.New("the entries cannot be left blank"),win).Show()
-	
-				return 
-				
-				
+
+				dialog.NewError(errors.New("the entries cannot be left blank"), win).Show()
+
+				return
+
 			}
 			tName.Disable()
-			(*b).Append(templater.NewTemplate(tName.Text, stEntry.Text, etEntry.Text, handler.CreateFlags(flags.Selected)...))
+			(*b).Append(schedules.New(tName.Text, stEntry.Text, etEntry.Text, handler.CreateFlags(flags.Selected)))
 
 			stEntry.Text = ""
 			etEntry.Text = ""
@@ -483,7 +478,7 @@ func BuildTemplateList(data binding.UntypedList) *widget.List {
 		},
 		func(di binding.DataItem, o fyne.CanvasObject) {
 
-			o.(*canvas.Text).Text = converter.DataItemToTemplate(di).PrettyString()
+			o.(*canvas.Text).Text = converter.DataItemToSchedule(di).PrettyString()
 		},
 	)
 }
@@ -499,7 +494,7 @@ func BuildTemplatTab(win fyne.Window) *container.Split {
 
 	content := container.NewVSplit(
 		ls,
-		TemplateForm(ls, &b,win),
+		TemplateForm(ls, &b, win),
 	)
 
 	return content
@@ -550,8 +545,6 @@ func SettingsTab(w fyne.Window) *widget.Form {
 
 	dnsaCheck := widget.NewCheck("", func(b bool) {})
 	dnsaCheck.SetChecked(settings.LoadSettings().ShowDeleteConfirmation)
-
-	
 
 	return &widget.Form{
 		Items: []*widget.FormItem{ // we can specify items in the constructor

@@ -22,3 +22,8 @@ func TestLoadTemplate(t *testing.T) {
 	log.Fatal()
 
 }
+
+func TestLoadAllTemplates(t *testing.T) {
+	log.Println(LoadAllTemplates())
+	log.Fatal()
+}

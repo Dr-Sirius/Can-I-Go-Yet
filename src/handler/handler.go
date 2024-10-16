@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"can-i-go-yet/src/converter"
 	"can-i-go-yet/src/schedules"
 	"can-i-go-yet/src/settings"
 	"can-i-go-yet/src/templates"
@@ -31,9 +30,9 @@ func SetTime() {
 			return
 		}
 	}
-	if len(sch) == 0 && GetDefaultTemplate() != "" {
-		sch = converter.TemplateToSchedule(GetDefaultTemplate(), time.Now().Format("2006-01-02"))
-	}
+	// if len(sch) == 0 && GetDefaultTemplate() != "" {
+	// 	sch = converter.TemplateToSchedule(GetDefaultTemplate(), time.Now().Format("2006-01-02"))
+	// }
 
 }
 
@@ -55,7 +54,7 @@ stOpen:
 		return setOpen()
 	} else {
 		set := settings.LoadSettings()
-		dHours := schedules.NewSchedule(set.StandardHours[0], set.StandardHours[1], time.Now().Format("2006-01-02"), 0)
+		dHours := schedules.New(set.StandardHours[0], set.StandardHours[1], time.Now().Format("2006-01-02"), []int{0})
 		if dHours.StartTime.Equal(time.Now()) || (dHours.StartTime.Before(time.Now()) && dHours.EndTime.After(time.Now())) {
 			Status = "Open"
 			return setOpen()
@@ -72,8 +71,8 @@ Checks and returns status of current schedule based on its flags
 func CheckFlags() (string, color.Color) {
 	flags := GetCurrentSchedule().Flags
 
-	if _, ok := flags[schedules.BRKE]; ok {
-		if _, ok := flags[schedules.UNDS]; ok {
+	if schedules.HasFlag(flags, schedules.BRKE) {
+		if schedules.HasFlag(flags, schedules.UNDS) {
 			Status = "Closed"
 			return setClosed()
 		} else {
@@ -81,10 +80,10 @@ func CheckFlags() (string, color.Color) {
 			return setOnBreak()
 		}
 
-	} else if _, ok := flags[schedules.UNDS]; ok {
+	} else if schedules.HasFlag(flags, schedules.UNDS) {
 		return setUnderStaffed()
-	} else if _, ok := flags[schedules.OPEN]; ok {
-		if _, ok := flags[-1]; ok {
+	} else if schedules.HasFlag(flags, schedules.OPEN) {
+		if schedules.HasFlag(flags, -1) {
 			Status = "Closed"
 			return setClosed()
 		}
@@ -220,7 +219,7 @@ func Remove(index int) {
 		return
 	}
 
-	schedules.RemoveSchedule(sch[index])
+	//schedules.RemoveSchedule(sch[index])
 	s := sch[0:index]
 	if len(sch)-1 > index {
 		s = append(s, sch[index+1:]...)

@@ -11,5 +11,5 @@ var Schedules []schedules.Schedule
 func Start() {
 
 	settings.CreateSettings()
-	handler.SetTime()
+	
 }

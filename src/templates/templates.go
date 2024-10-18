@@ -105,7 +105,7 @@ func LoadAllTemplates() []Template {
 	templatesFiles, _ := os.ReadDir("Templates")
 	templates := make([]Template, len(templatesFiles))
 	for i, x := range templatesFiles {
-		log.Println(x.Name())
+		
 		templates[i], _ = LoadTemplate(x.Name()[2 : len(x.Name())-5])
 	}
 	return templates

@@ -12,14 +12,6 @@ func DataItemToSchedule(d binding.DataItem) schedules.Schedule {
 	return s.(schedules.Schedule)
 }
 
-// func TemplateToSchedule(name string, date string) []scheduler.Schedule {
-// 	s := []schedules.Schedule{}
-
-// 	for _, x := range templates.LoadTemplate(name) {
-// 		s = append(s, schedules.NewSchedule(x.Start_Time, x.End_Time, date, x.FlagsSlice()...))
-// 	}
-// 	return s
-// }
 
 func ColorToInt(c color.Color) [4]int {
 	r, g, b, a := c.RGBA()

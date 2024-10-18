@@ -7,94 +7,36 @@ import (
 	"fmt"
 	"image/color"
 	"log"
-	"os"
 	"time"
 
 	"fyne.io/fyne/v2/container"
 )
 
-var sch []schedules.Schedule
 var stayOpen bool = settings.LoadSettings().StayOpen
 var Announcments string = ""
 var Status string = ""
-var defaultTemplate = settings.LoadSettings().DefaultTemplate
+var defaultTemplate, defaultTemplateErr = templates.LoadTemplate(settings.LoadSettings().DefaultTemplate)
 
-/*
-Loads and Sets schedules for the current date
-*/
-func SetTime() {
-	s, _ := templates.LoadTemplate(defaultTemplate)
-	sch = s.Schedules
-	for _, x := range sch {
-		if time.Now().Equal(x.StartTime) || (time.Now().After(x.StartTime) && time.Now().Before(x.EndTime)) {
-			return
-		}
+func init() {
+	if defaultTemplateErr != nil {
+		log.Fatal(defaultTemplateErr)
 	}
-	// if len(sch) == 0 && GetDefaultTemplate() != "" {
-	// 	sch = converter.TemplateToSchedule(GetDefaultTemplate(), time.Now().Format("2006-01-02"))
-	// }
-
 }
 
-/*
-Checks and returns status of current schedule if there is one else returns status based on stayOpen var
-*/
-func CheckTime() (string, color.Color) {
-	if len(sch) == 0 {
-		goto stOpen
-
-	} else if checkSchedule() != -1 {
-
-		return CheckFlags()
-	}
-stOpen:
-	if stayOpen {
-
-		Status = "Open"
-		return setOpen()
-	} else {
-		set := settings.LoadSettings()
-		dHours := schedules.New(set.StandardHours[0], set.StandardHours[1], time.Now().Format("2006-01-02"), []int{0})
-		if dHours.StartTime.Equal(time.Now()) || (dHours.StartTime.Before(time.Now()) && dHours.EndTime.After(time.Now())) {
-			Status = "Open"
-			return setOpen()
-		}
-		Status = "Closed"
-		return setClosed()
-	}
-
-}
+var currentSchedules = defaultTemplate.Schedules
 
 /*
-Checks and returns status of current schedule based on its flags
+Returns the index of the schedule that StartTime is equal to time.Now() or the schedule that has time.Now() in between its StartTime and EndTime
 */
-func CheckFlags() (string, color.Color) {
-	flags := GetCurrentSchedule().Flags
-
-	if schedules.HasFlag(flags, schedules.BRKE) {
-		if schedules.HasFlag(flags, schedules.UNDS) {
-			Status = "Closed"
-			return setClosed()
-		} else {
-			Status = "Break"
-			return setOnBreak()
+func getCurrentScheduleID() int {
+	for i, x := range currentSchedules {
+		if x.StartTime.Equal(time.Now()) {
+			return i
+		} else if x.StartTime.Before(time.Now()) && x.EndTime.After(time.Now()) {
+			return i
 		}
-
-	} else if schedules.HasFlag(flags, schedules.UNDS) {
-		return setUnderStaffed()
-	} else if schedules.HasFlag(flags, schedules.OPEN) {
-		if schedules.HasFlag(flags, -1) {
-			Status = "Closed"
-			return setClosed()
-		}
-		Status = "Open"
-		return setOpen()
-	} else {
-		log.Println("closed")
-		Status = "Closed"
-		return setClosed()
 	}
-
+	return -1
 }
 
 /*
@@ -135,108 +77,8 @@ func GetDate() string {
 	if int(m) < 10 {
 		mt = "0" + mt
 	}
-
 	dt := fmt.Sprint(y) + "-" + mt + "-" + fmt.Sprint(d)
 	return dt
-}
-
-/*
-Returns all of todays schedules
-*/
-func GetSchedules() []schedules.Schedule {
-	return sch
-}
-
-/*
-Returns the current schedule from todays schedule based on current time
-*/
-func GetCurrentSchedule() schedules.Schedule {
-	if checkSchedule() == -1 {
-		return schedules.Schedule{}
-	}
-	return sch[checkSchedule()]
-}
-
-/*
-Returns the next schedule from todays schedule based on current schedule and time
-*/
-func GetNextSchedule() schedules.Schedule {
-	if checkNextSchedule() == -1 {
-		return schedules.Schedule{StartTime: GetCurrentSchedule().EndTime}
-	}
-	return sch[checkNextSchedule()]
-}
-
-/*
-Returns index of next schedule based on current time
-*/
-func checkNextSchedule() int {
-	for i, x := range sch {
-		if time.Now().Before(x.StartTime) {
-			return i
-		}
-	}
-	return -1
-}
-
-/*
-Returns index of current schedule based on current time
-*/
-func checkSchedule() int {
-	for i, x := range sch {
-		if time.Now().Equal(x.StartTime) || (time.Now().After(x.StartTime) && time.Now().Before(x.EndTime)) {
-
-			return i
-		}
-	}
-	return -1
-}
-
-/*
-Returns a string array containing string versions of todays schedules
-*/
-func GetStringSchedules() []string {
-	s := []string{}
-	for _, x := range sch {
-		s = append(s, x.PrettyString())
-	}
-	return s
-}
-
-/*
-Returns string version of GetNextSchedule StartTime
-*/
-func GetReturnTime() string {
-	return GetNextSchedule().StringStartTime()
-}
-
-/*
-Removes given schedule at index from sch and Schedules.csv
-*/
-func Remove(index int) {
-
-	if (len(sch) == 1 || len(sch) == 0) && sch[0].Equal(schedules.Schedule{}) {
-		return
-	}
-
-	//schedules.RemoveSchedule(sch[index])
-	s := sch[0:index]
-	if len(sch)-1 > index {
-		s = append(s, sch[index+1:]...)
-	}
-
-	if len(s) == 0 {
-		s = append(s, schedules.Schedule{})
-	}
-	sch = s
-
-}
-
-/*
-Removes all schedules from sch and Schedules.csv
-*/
-func RemoveAll() {
-	os.WriteFile("Schedules/Schedules.csv", []byte("Date, Start_Time, End_Time, Flags"), os.ModePerm)
 }
 
 /*

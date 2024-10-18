@@ -244,3 +244,10 @@ func HasFlag(f []int, flag int) bool {
 	}
 	return false
 }
+
+
+func RemoveSchedule(ScheduleID int,Schedules []Schedule) []Schedule{
+	temp := Schedules[:ScheduleID]
+	return append(temp, Schedules[ScheduleID+1:]...)
+
+}

@@ -47,12 +47,12 @@ func (s Settings) SaveSettings() {
 
 func CreateSettings() {
 	s := Settings{
-		DefaultTemplate: "",
-		StayOpen:        true,
-		OpenColor:       [4]int{0, 255, 0, 255},
-		ClosedColor:     [4]int{255, 0, 0, 255},
-		BreakColor:      [4]int{0, 0, 255, 255},
-		StandardHours:   [2]string{"7:45 am", "2:30 pm"},
+		DefaultTemplate:        "TempTemplate",
+		StayOpen:               true,
+		OpenColor:              [4]int{0, 255, 0, 255},
+		ClosedColor:            [4]int{255, 0, 0, 255},
+		BreakColor:             [4]int{0, 0, 255, 255},
+		StandardHours:          [2]string{"7:45 am", "2:30 pm"},
 		FullscreenCustomerView: false,
 		ShowDeleteConfirmation: true,
 	}
@@ -60,7 +60,7 @@ func CreateSettings() {
 	if err != nil {
 		log.Println(err)
 	}
-	if _, err := os.Stat("Settings/Settings.jsonv"); errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat("Settings/Settings.json"); errors.Is(err, os.ErrNotExist) {
 		if err := os.Mkdir("Settings", os.ModePerm); err != nil {
 			log.Println(err)
 		} else {

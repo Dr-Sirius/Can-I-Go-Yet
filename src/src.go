@@ -1,7 +1,7 @@
 package src
 
 import (
-	"can-i-go-yet/src/handler"
+	//"can-i-go-yet/src/handler"
 	"can-i-go-yet/src/schedules"
 	"can-i-go-yet/src/settings"
 )

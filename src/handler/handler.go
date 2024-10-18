@@ -15,21 +15,26 @@ import (
 var stayOpen bool = settings.LoadSettings().StayOpen
 var Announcments string = ""
 var Status string = ""
-var defaultTemplate, defaultTemplateErr = templates.LoadTemplate(settings.LoadSettings().DefaultTemplate)
+var currentSettings = settings.LoadSettings()
+var defaultTemplate, defaultTemplateErr = templates.LoadTemplate(currentSettings.DefaultTemplate)
+var currentSchedules []schedules.Schedule
 
 func init() {
-	if defaultTemplateErr != nil {
+	if defaultTemplateErr != nil && currentSettings.DefaultTemplate != "" {
 		log.Fatal(defaultTemplateErr)
+	} else {
+		defaultTemplate, _ = templates.LoadTemplate("TestTemplate")
 	}
+	currentSchedules = defaultTemplate.Schedules
 }
-
-var currentSchedules = defaultTemplate.Schedules
 
 /*
 Returns the index of the schedule that StartTime is equal to time.Now() or the schedule that has time.Now() in between its StartTime and EndTime
 */
 func getCurrentScheduleID() int {
+	log.Println(currentSchedules)
 	for i, x := range currentSchedules {
+		log.Println(i, x)
 		if x.StartTime.Equal(time.Now()) {
 			return i
 		} else if x.StartTime.Before(time.Now()) && x.EndTime.After(time.Now()) {
@@ -37,6 +42,53 @@ func getCurrentScheduleID() int {
 		}
 	}
 	return -1
+}
+
+func GetCurrentSchedule() schedules.Schedule {
+	id := getCurrentScheduleID()
+	if id == -1 {
+		return schedules.Schedule{}
+	}
+	return currentSchedules[id]
+}
+
+func GetCurrentScheduleString() string {
+	return GetCurrentSchedule().PrettyString()
+}
+
+func GetCurrentSchedules() []schedules.Schedule {
+	return currentSchedules
+}
+
+func GetSchedule(ScheduleID int) schedules.Schedule {
+	return currentSchedules[ScheduleID]
+}
+
+func GetReturnTime() string {
+	return GetCurrentSchedule().StringStartTime()
+}
+
+func RemoveScheduleFromCurrent(schedule int) {
+	currentSchedules = schedules.RemoveSchedule(schedule, currentSchedules)
+}
+
+func RemoveSchedulesFromCurrent() {
+	currentSchedules = []schedules.Schedule{}
+}
+
+func CheckTime() (string, color.Color) {
+	switch GetCurrentSchedule().Flags[0] {
+	case schedules.OPEN:
+		return setOpen()
+	case schedules.BRKE:
+		return setOnBreak()
+	case schedules.UNDS:
+		return setUnderStaffed()
+	case schedules.HDAY:
+		return setClosed()
+	default:
+		return setClosed()
+	}
 }
 
 /*
@@ -130,7 +182,7 @@ func SortTabs(tabs []*container.TabItem) []*container.TabItem {
 }
 
 func SetDefaultTemplate(name string) {
-	defaultTemplate = name
+	defaultTemplate, _ = templates.LoadTemplate(name)
 }
 
 func SetStayOpen(b bool) {
@@ -138,7 +190,7 @@ func SetStayOpen(b bool) {
 }
 
 func GetDefaultTemplate() string {
-	return defaultTemplate
+	return defaultTemplate.Name
 }
 
 func GetStayOpen() bool {
@@ -146,6 +198,6 @@ func GetStayOpen() bool {
 }
 
 func Update() {
-	defaultTemplate = settings.LoadSettings().DefaultTemplate
+	defaultTemplate, _ = templates.LoadTemplate(settings.LoadSettings().DefaultTemplate)
 	stayOpen = settings.LoadSettings().StayOpen
 }

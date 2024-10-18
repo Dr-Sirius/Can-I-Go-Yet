@@ -38,7 +38,7 @@ func Run() {
 	content := container.NewAppTabs(
 		container.NewTabItem("Today", TodayTab(b)),
 		container.NewTabItem("Announcments", Announcments()),
-		container.NewTabItem("Add Schedule", AddForm(b, myWindow)),
+		//container.NewTabItem("Add Schedule", AddForm(b, myWindow)),
 		container.NewTabItem("Remove Schedule", Remove(b, myWindow)),
 		container.NewTabItem("Templates", TemplateTab(b, myWindow)),
 		container.NewTabItem("Build Template", BuildTemplatTab(myWindow)),
@@ -78,7 +78,7 @@ func TodayTab(data binding.UntypedList) *fyne.Container {
 	todayLBL := canvas.NewText("Today's Schedule", color.Black)
 	todayLBL.TextSize = 35
 
-	currentLBL := canvas.NewText("Current Schedule: "+handler.GetCurrentSchedule().PrettyString(), color.Black)
+	currentLBL := canvas.NewText("Current Schedule: "+handler.GetCurrentScheduleString(), color.Black)
 
 	customerBTN := widget.NewButton("Customer View", func() {
 		CustomerView()
@@ -86,7 +86,7 @@ func TodayTab(data binding.UntypedList) *fyne.Container {
 
 	go func() {
 		for range time.Tick(time.Second) {
-			currentLBL.Text = "Current Schedule: " + handler.GetCurrentSchedule().PrettyString()
+			currentLBL.Text = "Current Schedule: " + handler.GetCurrentScheduleString()
 		}
 	}()
 	return container.NewGridWithRows(
@@ -99,50 +99,50 @@ func TodayTab(data binding.UntypedList) *fyne.Container {
 
 }
 
-/*
-Creates a *widget.Form for creating new schedule
-*/
-func AddForm(data binding.UntypedList, win fyne.Window) *widget.Form {
-	dtEntry := widget.NewEntry()
-	dtEntry.SetText(time.Now().Format("2006-01-02"))
-	stEntry := widget.NewEntry()
-	stEntry.SetText("12:00 am")
-	etEntry := widget.NewEntry()
-	etEntry.SetText("12:00 pm")
-	flags := widget.CheckGroup{
-		Horizontal: true,
-		Options: []string{
-			"Open",
-			"Break",
-			"Understaffed",
-			"Holiday",
-			"Closed",
-		},
-	}
-	return &widget.Form{
-		Items: []*widget.FormItem{ // we can specify items in the constructor
-			{Text: "Date", Widget: dtEntry},
-			{Text: "Start Time", Widget: stEntry},
-			{Text: "End Time", Widget: etEntry},
-			{Text: "Flags", Widget: &flags},
-		},
-		OnSubmit: func() {
-			if dtEntry.Text == "" || stEntry.Text == "" || etEntry.Text == "" {
+// /*
+// Creates a *widget.Form for creating new schedule
+// */
+// func AddForm(data binding.UntypedList, win fyne.Window) *widget.Form {
+// 	dtEntry := widget.NewEntry()
+// 	dtEntry.SetText(time.Now().Format("2006-01-02"))
+// 	stEntry := widget.NewEntry()
+// 	stEntry.SetText("12:00 am")
+// 	etEntry := widget.NewEntry()
+// 	etEntry.SetText("12:00 pm")
+// 	flags := widget.CheckGroup{
+// 		Horizontal: true,
+// 		Options: []string{
+// 			"Open",
+// 			"Break",
+// 			"Understaffed",
+// 			"Holiday",
+// 			"Closed",
+// 		},
+// 	}
+// 	return &widget.Form{
+// 		Items: []*widget.FormItem{ // we can specify items in the constructor
+// 			{Text: "Date", Widget: dtEntry},
+// 			{Text: "Start Time", Widget: stEntry},
+// 			{Text: "End Time", Widget: etEntry},
+// 			{Text: "Flags", Widget: &flags},
+// 		},
+// 		OnSubmit: func() {
+// 			if dtEntry.Text == "" || stEntry.Text == "" || etEntry.Text == "" {
 
-				dialog.NewError(errors.New("the entries cannot be left blank"), win).Show()
+// 				dialog.NewError(errors.New("the entries cannot be left blank"), win).Show()
 
-				return
+// 				return
 
-			}
-			s := schedules.New(stEntry.Text, etEntry.Text, dtEntry.Text, handler.CreateFlags(flags.Selected))
-			//schedules.AddSchedule(dtEntry.Text, stEntry.Text, etEntry.Text, handler.CreateFlags(flags.Selected)...)
-			data.Append(s)
-			if dtEntry.Text == handler.GetDate() {
-				handler.SetTime()
-			}
-		},
-	}
-}
+// 			}
+// 			s := schedules.New(stEntry.Text, etEntry.Text, dtEntry.Text, handler.CreateFlags(flags.Selected))
+// 			//schedules.AddSchedule(dtEntry.Text, stEntry.Text, etEntry.Text, handler.CreateFlags(flags.Selected)...)
+// 			data.Append(s)
+// 			if dtEntry.Text == handler.GetDate() {
+// 				handler.SetTime()
+// 			}
+// 		},
+// 	}
+// }
 
 /*
 Creates *fyne.Container for removing schedules on todays date
@@ -160,7 +160,7 @@ func Remove(data binding.UntypedList, win fyne.Window) *fyne.Container {
 
 		}
 
-		handler.Remove(selected)
+		handler.RemoveScheduleFromCurrent(selected)
 		s, _ := data.Get()
 		temp := s[selected+1:]
 		s = append(s[:selected], temp...)
@@ -186,7 +186,7 @@ func Remove(data binding.UntypedList, win fyne.Window) *fyne.Container {
 	// })
 
 	rl.OnSelected = func(id widget.ListItemID) {
-		lbl.Text = "Remove " + handler.GetSchedules()[id].PrettyString() + " ?"
+		lbl.Text = "Remove " + handler.GetSchedule(id).PrettyString() + " ?"
 		selected = id
 
 		lbl.Refresh()
@@ -288,11 +288,11 @@ func TemplateTab(data binding.UntypedList, win fyne.Window) *fyne.Container {
 
 		}
 
-		handler.SetTime()
+		
 
 	})
 
-	replaceBTN := widget.NewButton("Replace Todays Schedule with Template", func() {
+	replaceBTN := widget.NewButton("Replace Current Schedules with Template", func() {
 		if len(templates.LoadAllTemplates()) == 0 {
 			dialog.NewError(errors.New("there are no templates\n\n you can create a new template in the Build Template tab"), win).Show()
 
@@ -305,7 +305,7 @@ func TemplateTab(data binding.UntypedList, win fyne.Window) *fyne.Container {
 		}
 		s := make([]interface{}, 0)
 		data.Set(s)
-		handler.RemoveAll()
+		handler.RemoveSchedulesFromCurrent()
 		template, _ := templates.LoadTemplate(name)
 		for _, x := range template.Schedules {
 
@@ -313,7 +313,7 @@ func TemplateTab(data binding.UntypedList, win fyne.Window) *fyne.Container {
 
 		}
 
-		handler.SetTime()
+		
 
 	})
 

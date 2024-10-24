@@ -23,6 +23,7 @@ func init() {
 	if defaultTemplateErr != nil && currentSettings.DefaultTemplate != "" {
 		log.Fatal(defaultTemplateErr)
 	} else {
+		log.Println("TestT")
 		defaultTemplate, _ = templates.LoadTemplate("TestTemplate")
 	}
 	currentSchedules = defaultTemplate.Schedules

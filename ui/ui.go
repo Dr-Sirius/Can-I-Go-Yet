@@ -7,6 +7,7 @@ import (
 	"can-i-go-yet/src/settings"
 	"can-i-go-yet/src/templates"
 	"errors"
+	"log"
 
 	"image/color"
 	"time"
@@ -31,14 +32,13 @@ func Run() {
 	myWindow := app.NewWindow("Can I Go Yet?")
 
 	b := binding.NewUntypedList()
-	// for _, x := range schedules.LoadSchedules() {
-	// 	b.Append(x)
-	// }
+	for _, x := range handler.GetCurrentSchedules() {
+		b.Append(x)
+	}
 
 	content := container.NewAppTabs(
 		container.NewTabItem("Today", TodayTab(b)),
 		container.NewTabItem("Announcments", Announcments()),
-		//container.NewTabItem("Add Schedule", AddForm(b, myWindow)),
 		container.NewTabItem("Remove Schedule", Remove(b, myWindow)),
 		container.NewTabItem("Templates", TemplateTab(b, myWindow)),
 		container.NewTabItem("Build Template", BuildTemplatTab(myWindow)),
@@ -288,8 +288,6 @@ func TemplateTab(data binding.UntypedList, win fyne.Window) *fyne.Container {
 
 		}
 
-		
-
 	})
 
 	replaceBTN := widget.NewButton("Replace Current Schedules with Template", func() {
@@ -312,8 +310,6 @@ func TemplateTab(data binding.UntypedList, win fyne.Window) *fyne.Container {
 			data.Append(schedules.New(x.StringStartTime(), x.StringEndTime(), dateENT.Text, x.Flags))
 
 		}
-
-		
 
 	})
 
@@ -397,7 +393,24 @@ func TemplateForm(list *widget.List, b *binding.UntypedList, win fyne.Window) *f
 			item, _ := (*b).GetItem(i)
 			schedule = append(schedule, converter.DataItemToSchedule(item))
 		}
+		if templates.Exists(tName.Text) {
+			log.Println("true")
+			dialog.NewError(errors.New("Template: "+tName.Text+" already exists"), win).Show()
+			tName.Enable()
+			s := make([]interface{}, 0)
+			(*b).Set(s)
+			stEntry.Text = "12:00 am"
+			etEntry.Text = "12:00 pm"
+			tName.Text = ""
+			tName.Refresh()
+			stEntry.Refresh()
+			etEntry.Refresh()
+			list.Refresh()
+			return
+		}
+
 		templates.CreateTemplateFile(templates.Template{Name: tName.Text, Schedules: schedule})
+		log.Println("Created")
 		tName.Enable()
 		s := make([]interface{}, 0)
 		(*b).Set(s)

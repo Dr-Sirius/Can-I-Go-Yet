@@ -31,14 +31,12 @@ func CreateTemplateFile(template Template) {
 	if err != nil {
 		log.Println(err)
 	}
-	if Exists("Templates/t_" + template.Name + ".json") {
-		if err := os.Mkdir("Templates", os.ModePerm); err != nil {
-			log.Println(err)
-		} else {
-			os.Create("Templates/t_" + template.Name + ".json")
-			os.WriteFile("Templates/t_"+template.Name+".json", templateJson, os.ModePerm)
-		}
+	if _, err := os.Stat("Templates/t_" + template.Name + ".json"); errors.Is(err, os.ErrNotExist) {
+
+		os.Create("Templates/t_" + template.Name + ".json")
+		os.WriteFile("Templates/t_"+template.Name+".json", templateJson, os.ModePerm)
 	}
+	//os.WriteFile("Templates/t_"+template.Name+".json", templateJson, os.ModePerm)
 }
 
 /*
@@ -96,8 +94,8 @@ func (t *Template) SetSchedulesForToday() {
 Returns boolean based on if passed file exists
 */
 func Exists(name string) bool {
-	_, err := os.Stat("Templates")
-	return errors.Is(err, os.ErrNotExist)
+	_, err := os.Stat("Templates/t_" + name + ".json")
+	return err == nil
 }
 
 func LoadAllTemplates() []Template {
@@ -105,7 +103,7 @@ func LoadAllTemplates() []Template {
 	templatesFiles, _ := os.ReadDir("Templates")
 	templates := make([]Template, len(templatesFiles))
 	for i, x := range templatesFiles {
-		
+
 		templates[i], _ = LoadTemplate(x.Name()[2 : len(x.Name())-5])
 	}
 	return templates

@@ -18,7 +18,7 @@ If you want to simply create an executable file to run then run
 fyne package --os {Your Operating System} --src app
 ```
 
-if you don't want to use fyne you can simply run
+if you don't want to use fyne's build tool you can simply run
 ```
 go build app/main.go
 ```

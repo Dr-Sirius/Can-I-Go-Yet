@@ -78,6 +78,10 @@ func RemoveSchedulesFromCurrent() {
 }
 
 func CheckTime() (string, color.Color) {
+	if GetCurrentSchedule().Equal(schedules.Schedule{}) {
+		return setOpen()
+	}
+	
 	switch GetCurrentSchedule().Flags[0] {
 	case schedules.OPEN:
 		return setOpen()

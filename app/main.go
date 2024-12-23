@@ -6,7 +6,9 @@ import (
 )
 
 func main() {
-	src.Start()
+
+	go src.Start()
+
 	ui.Run()
-	
+
 }

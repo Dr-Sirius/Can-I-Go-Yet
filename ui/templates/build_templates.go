@@ -8,13 +8,14 @@ import (
 	"errors"
 	"image/color"
 	"log"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
-	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -24,12 +25,15 @@ import (
 Creates *widget.Form for creating new template
 */
 func TemplateForm(list *widget.List, b *binding.UntypedList, win fyne.Window) *fyne.Container {
+	// Template Name
 	tName := widget.NewEntry()
-
+	// Starting Time
 	stEntry := widget.NewEntry()
 	stEntry.SetText("12:00 am")
+	// End Time
 	etEntry := widget.NewEntry()
 	etEntry.SetText("12:00 pm")
+
 	saveBTN := widget.NewButtonWithIcon("Save Template", theme.DocumentSaveIcon(), func() {
 		schedule := []schedules.Schedule{}
 		for i := range (*b).Length() {
@@ -93,7 +97,7 @@ func TemplateForm(list *widget.List, b *binding.UntypedList, win fyne.Window) *f
 
 			}
 			tName.Disable()
-			(*b).Append(schedules.New(tName.Text, stEntry.Text, etEntry.Text, handler.CreateFlags(flags.Selected)))
+			(*b).Append(schedules.New(stEntry.Text, etEntry.Text, time.Now().Format("2006-01-02"), handler.CreateFlags(flags.Selected)))
 
 			stEntry.Text = ""
 			etEntry.Text = ""

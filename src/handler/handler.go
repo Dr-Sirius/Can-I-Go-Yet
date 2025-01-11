@@ -29,16 +29,28 @@ func init() {
 	currentSchedules = defaultTemplate.Schedules
 }
 
+func AssignNewSchedules(t templates.Template) {
+	currentSchedules = t.Schedules
+}
+
+func AddNewSchedules(t templates.Template) {
+	currentSchedules = append(currentSchedules, t.Schedules...)
+	currentSchedules = schedules.ScheduleSort(currentSchedules)
+}
+
 /*
 Returns the index of the schedule that StartTime is equal to time.Now() or the schedule that has time.Now() in between its StartTime and EndTime
 */
 func getCurrentScheduleID() int {
-	log.Println(currentSchedules)
+	log.Println(currentSchedules, "Current Sched")
 	for i, x := range currentSchedules {
-		log.Println(i, x)
-		if x.StartTime.Equal(time.Now()) {
+		log.Println(x.Date())
+		if x.IsStartTimeNow() {
+			log.Println("Equal TO")
 			return i
-		} else if x.StartTime.Before(time.Now()) && x.EndTime.After(time.Now()) {
+		} else if x.IsTimeBetween() {
+
+			log.Println("Between")
 			return i
 		}
 	}
@@ -81,7 +93,7 @@ func CheckTime() (string, color.Color) {
 	if GetCurrentSchedule().Equal(schedules.Schedule{}) {
 		return setOpen()
 	}
-	
+
 	switch GetCurrentSchedule().Flags[0] {
 	case schedules.OPEN:
 		return setOpen()

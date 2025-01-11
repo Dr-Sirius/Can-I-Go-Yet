@@ -32,9 +32,15 @@ var timeFormat string = "2006-01-02 3:04 pm"
 */
 
 /*
-Creates a new Schedule struct from formated strings and flags
+Creates a new Schedule from string and integer arguments
 
-EX. st & et -> 12:30 am - date -> 2024-08-19
+EX. st = 12:00 pm, et = 2:00 am, date = 2024-08-19, flags = {0,1,2}
+
+	-> Schedule {
+		StartTime = 2024-08-19 12:00:00 ETC,
+		EndTime = 2024-08-19 02:00:00 ETC,
+		Flags = []int{0,1,2},
+	}
 */
 func New(st string, et string, date string, flags []int) Schedule {
 	slices.Sort(flags)
@@ -50,16 +56,14 @@ func NewFromTime(st time.Time, et time.Time, flags []int) Schedule {
 
 /*
 Sorts schedules based on the start time
-
-Uses a bubble sort algorithm
 */
-func scheduleSort(Schedules []Schedule) []Schedule {
+func ScheduleSort(Schedules []Schedule) []Schedule {
 	for i := len(Schedules) - 1; i >= 0; i -= 1 {
 
 		for x := range i {
 			if Schedules[x].EqualTimes(Schedules[x+1]) {
 				newSchedules := append(Schedules[:x], Schedules[x+1:]...)
-				return scheduleSort(newSchedules)
+				return ScheduleSort(newSchedules)
 			} else if Schedules[x].StartTime.Compare(Schedules[x+1].StartTime) > 0 {
 				temp := Schedules[x]
 				Schedules[x] = Schedules[x+1]
@@ -229,6 +233,37 @@ func (s Schedule) EqualTimes(o Schedule) bool {
 }
 
 /*
+Return true if scheedule s Startime is equal to time.Now()
+*/
+func (s Schedule) IsStartTimeNow() bool {
+	hour := s.StartTime.Hour()
+	min := s.StartTime.Minute()
+	tm := time.Now()
+	nHour := tm.Hour()
+	nMin := tm.Minute()
+	log.Println("HM: ", hour, min, "TM: ", nHour, nMin)
+	return (hour == nHour) && (min == nMin)
+}
+
+func (s Schedule) IsTimeBetween() bool {
+	sHour := s.StartTime.Hour()
+	sMin := s.StartTime.Minute()
+
+	eHour := s.EndTime.Hour()
+	eMin := s.EndTime.Minute()
+
+	tm := time.Now()
+	nHour := tm.Hour()
+	nMin := tm.Minute()
+
+	if eHour < nHour && sHour < nHour {
+		return true
+	}
+	log.Println("SM: ", sHour, sMin, "EM", eHour, eMin, "TM: ", nHour, nMin)
+	return (sHour <= nHour && sMin <= nMin) && (eHour >= nHour && (eMin >= nMin || eMin < nMin))
+}
+
+/*
 Returns a version of the Schedule with the current date
 */
 func GetScheduleWithTodayDate(s Schedule) Schedule {
@@ -245,8 +280,7 @@ func HasFlag(f []int, flag int) bool {
 	return false
 }
 
-
-func RemoveSchedule(ScheduleID int,Schedules []Schedule) []Schedule{
+func RemoveSchedule(ScheduleID int, Schedules []Schedule) []Schedule {
 	temp := Schedules[:ScheduleID]
 	return append(temp, Schedules[ScheduleID+1:]...)
 

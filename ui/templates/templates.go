@@ -11,9 +11,9 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
-	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -79,6 +79,7 @@ func TemplateTab(data binding.UntypedList, win fyne.Window) *fyne.Container {
 			return
 		}
 		template, _ := templates.LoadTemplate(name)
+		
 		for _, x := range template.Schedules {
 
 			data.Append(schedules.New(x.StringStartTime(), x.StringEndTime(), dateENT.Text, x.Flags))
@@ -101,11 +102,16 @@ func TemplateTab(data binding.UntypedList, win fyne.Window) *fyne.Container {
 		s := make([]interface{}, 0)
 		data.Set(s)
 		handler.RemoveSchedulesFromCurrent()
+		
 		template, _ := templates.LoadTemplate(name)
+		
+		template.SetSchedulesForToday()
+
+		handler.AssignNewSchedules(template)
 		for _, x := range template.Schedules {
 
-			data.Append(schedules.New(x.StringStartTime(), x.StringEndTime(), dateENT.Text, x.Flags))
-
+			data.Append(x)
+			
 		}
 
 	})
